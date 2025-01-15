@@ -18,7 +18,7 @@ name: Continuous Integration
 on:
   workflow_call:
     inputs:
-      prettier-options:
+      input-prettier-options:
         type: string
         required: false
         default: "--write"
@@ -38,4 +38,4 @@ jobs:
         uses: creyD/prettier_action@v4.3
         with:
           # This part is also where you can pass other options, for example:
-          prettier_options: ${{ inputs.prettier-options }}
+          prettier_options: ${{ inputs.input-prettier-options }}
