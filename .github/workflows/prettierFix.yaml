@@ -21,7 +21,7 @@ on:
       input-prettier-options:
         type: string
         required: false
-        default: "--write"
+        default: ". --write"
 
 jobs:
   prettier:
