@@ -21,7 +21,7 @@ on:
       prettier-options:
         type: string
         required: false
-        default: ""
+        default: "--write"
 
 jobs:
   prettier:
