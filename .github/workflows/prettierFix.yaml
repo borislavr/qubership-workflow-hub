@@ -17,12 +17,11 @@ name: Continuous Integration
 # This action works with pull requests and pushes
 on:
   workflow_call:
-
-inputs:
-  prettier-options:
-    type: string
-    required: false
-    default: "--write **/*.js"
+    inputs:
+      prettier-options:
+        type: string
+        required: false
+        default: "--write **/*.js"
 
 jobs:
   prettier:
