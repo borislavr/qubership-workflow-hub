@@ -2,33 +2,41 @@
 # How to implement the workflow in repository
 # Create a .github/workflows/prettier.yaml file in the repository and copy code below
 # ###################################################
-# name: Prettier-fix
+# name: Prettier
 # on: [pull_request, push, workflow_dispatch]
 #
 # permissions:
 #   contents: write
 #
 # jobs:
-#   call-prettier-fix:
+#   call-prettier:
 #     uses: Netcracker/qubership-github-workflows/.github/workflows/prettierFix.yaml@main
 # ###################################################
-name: Prettier-fix
-on: [workflow_call]
+name: Continuous Integration
 
-permissions:
-  contents: write
+# This action works with pull requests and pushes
+on:
+  workflow_call:
+
+inputs:
+  prettier-options:
+    type: string
+    required: false
+    default: "--write **/*.js"
 
 jobs:
-  prettier-fix:
-    ## Run only if the actor is not the GitHub Actions bot
-    #if: github.actor != 'github-actions[bot]'
+  prettier:
     runs-on: ubuntu-latest
-    # Limit the running time
-    timeout-minutes: 10
+
     steps:
-      - name: Invoke the Prettier fix
-        # Use the latest commit in the main branch.
-        uses: WorkOfStan/prettier-fix@main
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          #node-version: "20"
-          commit-changes: false
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+
+      - name: Prettify code
+        uses: creyD/prettier_action@v4.3
+        with:
+          # This part is also where you can pass other options, for example:
+          prettier_options: ${{ inputs.prettier-options }}
