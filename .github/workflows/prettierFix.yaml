@@ -21,7 +21,7 @@ on:
       prettier-options:
         type: string
         required: false
-        default: "--write **/*.js"
+        default: ""
 
 jobs:
   prettier:
