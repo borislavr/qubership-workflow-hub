@@ -1,4 +1,4 @@
-name: Update Version on pom.xml
+name: Update Version in pom.xml
 
 on:
   workflow_call:

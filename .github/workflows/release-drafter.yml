@@ -1,0 +1,45 @@
+name: GitHub Release Drafter
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: 'Custom release version'
+      publish:
+        description: 'Enable publish release?'
+        required: true
+        default: 'false'
+        type: string
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Set version env
+        run: echo "RELEASE_VERSION=${{ inputs.version }}" >> $GITHUB_ENV            
+
+      - name: Run Release Drafter
+        uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
+          publish: ${{ inputs.publish }}
+          name: v${{ env.RELEASE_VERSION }}
+          tag: v${{ env.RELEASE_VERSION }}
+          version: ${{ env.RELEASE_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Maven Publication
+        uses: netcracker/qubership-workflow-hub/actions/custom-event@main
+        with:
+          event_type: "maven-publication-trigger"
+          client_payload: '{"release_version": "${{ env.RELEASE_VERSION }}"}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}  
