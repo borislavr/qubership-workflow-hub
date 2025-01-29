@@ -10,6 +10,7 @@ name: Create GitHub release
 permissions:
   contents: write
   actions: write
+  workflows: write
 
 jobs:
   release-preparation:
