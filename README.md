@@ -38,7 +38,7 @@ on:
     types: [opened,closed,synchronize]
 jobs:
   cla_assistant:
-    uses: Netcracker/qubership-workflow-hub/.github/workflows/cla.yaml@main
+    uses: netcracker/qubership-workflow-hub/.github/workflows/cla.yaml@0.0.4
     secrets:
       personal_access_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 ```
@@ -63,7 +63,7 @@ permissions:
 
 jobs:
   call-prettier-fix:
-    uses: Netcracker/qubership-workflow-hub/.github/workflows/prettierFix.yaml@main
+    uses: netcracker/qubership-workflow-hub/.github/workflows/prettierFix.yaml@0.0.4
 ```
 
 ### Profanity filter
@@ -92,5 +92,5 @@ permissions:
 
 jobs:
   call-apply-filter:
-    uses: Netcracker/qubership-workflow-hub/.github/workflows/profanityFilter.yaml@main
+    uses: netcracker/qubership-workflow-hub/.github/workflows/profanityFilter.yaml@0.0.4
 ```

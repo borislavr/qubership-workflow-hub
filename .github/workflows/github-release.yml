@@ -27,7 +27,7 @@ jobs:
       - name: Update references
         run: |
           find . -type f -name '*.yaml' -or -name '*.yml' -or -name '*.md' -and -not -name 'github-release.yml' | \
-          xargs sed -i 's|uses: netcracker/qubership-workflow-hub/\(.*\)@main|uses: netcracker/qubership-workflow-hub/\1@${{ inputs.version }}|gi'
+          xargs sed -i 's|uses: netcracker/qubership-workflow-hub/\(.*\)@0.0.4|uses: netcracker/qubership-workflow-hub/\1@${{ inputs.version }}|gi'
       - name: Commit and push changes
         run: |
           git config --global user.name "${{ github.actor }}"
