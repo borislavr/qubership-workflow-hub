@@ -7,6 +7,10 @@ on:
 
 name: Create GitHub release
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   release-preparation:
     runs-on: ubuntu-latest
@@ -24,7 +28,7 @@ jobs:
       - name: Commit and push changes
         run: |
           git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.event.pusher.email }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git add .
           git commit -m "Update references to the new version"
           git push origin "release/v${{ inputs.version }}"
