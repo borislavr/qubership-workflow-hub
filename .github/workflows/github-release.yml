@@ -1,0 +1,39 @@
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+
+name: Create GitHub release
+
+jobs:
+  release-preparation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Release Branch
+        run: |
+          git checkout -b "release/v${{ inputs.version }}"
+          git push origin "release/v${{ inputs.version }}"
+      - name: Update references
+        run: |
+          find . -type f ! -name 'github-release.yml' -exec sed -i 's|uses: netcracker/qubership-workflow-hub/\(.*\)@main|uses: netcracker/qubership-workflow-hub/\1@${{ inputs.version }}|g' {} +
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.event.pusher.email }}"
+          git add .
+          git commit -m "Update references to the new version"
+          git push origin "release/v${{ inputs.version }}"
+          git tag "v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+  create-github-release:
+    needs: [release-preparation]
+    uses: Netcracker/qubership-workflow-hub/.github/workflows/release-drafter.yml@main
+    with:
+      version: ${{ inputs.version }}
+      publish: false
+      branch: "release/v${{ inputs.version }}" 
