@@ -41,11 +41,3 @@ jobs:
           version: ${{ env.RELEASE_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Maven Publication
-        uses: netcracker/qubership-workflow-hub/actions/custom-event@main
-        with:
-          event_type: "maven-publication-trigger"
-          client_payload: '{"release_version": "${{ env.RELEASE_VERSION }}"}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}  
