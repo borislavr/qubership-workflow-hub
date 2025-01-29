@@ -32,7 +32,7 @@ jobs:
           git push origin "v${{ inputs.version }}"
   create-github-release:
     needs: [release-preparation]
-    uses: Netcracker/qubership-workflow-hub/.github/workflows/release-drafter.yml@main
+    uses: borislavr/qubership-workflow-hub/.github/workflows/release-drafter.yml@main
     with:
       version: ${{ inputs.version }}
       publish: false
