@@ -1,3 +1,4 @@
+name: Say Goodby
 on: [workflow_dispatch]
 
 jobs:
