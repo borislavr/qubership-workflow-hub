@@ -25,7 +25,7 @@ def get_repo_users(user_map,repo_name):
     return repo_users.rstrip(',')
 
 def convert_to_array(string):
-    return f'["{string.replace(", ", "\",\"")}"]'
+    return f'["{string.replace(",", "\",\"")}"]'
 
 def main():
     file_path = sys.argv[1]
@@ -35,7 +35,7 @@ def main():
         print(get_repos(user_map))
     elif switch == "users":
         if len(sys.argv) > 2:
-            print(convert_to_array(get_repo_users(user_map,sys.argv[3])))
+            print(convert_to_array(get_repo_users(user_map,sys.argv[3]).join(',')))
 
 if __name__ == "__main__":
    main()
