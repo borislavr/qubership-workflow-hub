@@ -13,26 +13,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Read Collaborators Configuration File
-        id: read-collaborators-configuration
+        id: read_config
         uses: nichmor/minimal-read-yaml@v0.0.2
         with:
           config: ${{ github.workspace }}/.github/collaborators.yaml
       - name: Create Matrix
         id: create-matrix
         run: |
-          echo "collaborators=$(echo ${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')"
-          echo "collaborators=$(echo ${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')" >> $GITHUB_OUTPUT
+          echo "collaborators=${{ steps.read_config.outputs['collaborators'] }}"
 
-  apply:
-    needs: [read-config]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        collabs: ${{ needs.read-config.outputs.collaborators }}
-    steps:
-      - name: Print collab info
-        run: |
-          echo ${{ matrix.collabs }}
+#   apply:
+#     needs: [read-config]
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         collabs: ${{ needs.read-config.outputs.collaborators }}
+#     steps:
+#       - name: Print collab info
+#         run: |
+#           echo ${{ matrix.collabs }}
 #          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
 #          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.collaborators.repository), ',') }}"
 
