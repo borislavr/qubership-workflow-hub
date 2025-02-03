@@ -18,7 +18,7 @@ jobs:
 
       - name: Print collab info
         run: |
-          for i in ${{ steps.read-collaborators-configuration.outputs.collaborators }}; do
+          for i in ${{ steps.read-collaborators-configuration.outputs['collaborators'] }}; do
             echo ${i}
           done
 #          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
