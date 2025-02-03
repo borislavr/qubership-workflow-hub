@@ -12,15 +12,14 @@ jobs:
 
       - name: Read Collaborators Configuration File
         id: read-collaborators-configuration
-        uses: pietrobolcato/action-read-yaml@1.0.0
+        uses: nichmor/minimal-read-yaml@v0.0.2
         with:
           config: ${{ github.workspace }}/.github/collaborators.yaml
-          key-path-pattern: collaborators
 
       - name: Print collab info
         run: |
           echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
-          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.repository), ',') }}"
+#          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.collaborators.repository), ',') }}"
 
     #   - name: Run Manager Collaborators Action
     #     id: manager-collaborators-action
