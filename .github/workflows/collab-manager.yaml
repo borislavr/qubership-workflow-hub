@@ -19,7 +19,9 @@ jobs:
           config: ${{ github.workspace }}/.github/collaborators.yaml
       - name: Create Matrix
         id: create-matrix
-        run: echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys['repository']' | join(','))" >> $GITHUB_OUTPUT
+        run: |
+          echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')"
+          echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')" >> $GITHUB_OUTPUT
 
   apply:
     needs: [read-config]
