@@ -26,6 +26,8 @@ jobs:
       matrix:
         repo: ${{ fromJson(needs.read-config.outputs.repos) }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Print collab info
         run: |
           echo ${{ matrix.repo }}
