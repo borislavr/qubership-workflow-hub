@@ -11,9 +11,9 @@ def get_repos(user_map):
     print(user_map)
     for collab in user_map['contributors']:
         # print(collab)
-        repos += collab['repository'] + ","
+        repos.append(collab['repository'])
     # print("Repos: " + repos.rstrip(","))
-    return repos.rstrip(',')
+    return repos
 
 def get_repo_users(user_map,repo_name):
     repo_users = ""
