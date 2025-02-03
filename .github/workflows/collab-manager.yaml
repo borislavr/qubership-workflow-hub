@@ -17,7 +17,7 @@ jobs:
         run: |
           repos=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)
           echo "repos=${repos}"
-          echo "repos=${repos}" >> $GITHUB_OUTPUT
+          echo "repos=${{ toJson(env.repos) }}" >> $GITHUB_OUTPUT
 
 
   apply:

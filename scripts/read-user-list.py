@@ -35,7 +35,7 @@ def main():
         print(get_repos(user_map))
     elif switch == "users":
         if len(sys.argv) > 2:
-            print(convert_to_array(get_repo_users(user_map,sys.argv[3]).join(',')))
+            print(get_repo_users(user_map,sys.argv[3]))
 
 if __name__ == "__main__":
    main()
