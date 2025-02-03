@@ -29,7 +29,6 @@ jobs:
       - name: Print collab info
         run: |
           echo ${{ matrix.repo }}
-          python3 -m pip install pyyaml
           echo "$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})"
 
     #   - name: Run Manager Collaborators Action
