@@ -7,7 +7,7 @@ jobs:
   read-config:
     runs-on: ubuntu-latest
     outputs:
-      collaborators: ${{ steps.create-matrix.outputs }}
+      collaborators: ${{ steps.create-matrix.outputs.collaborators }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
           config: ${{ github.workspace }}/.github/collaborators.yaml
       - name: Create Matrix
         id: create-matrix
-        run: echo "ollaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys['repository']' | join(','))" >> $GITHUB_OUTPUT
+        run: echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys['repository']' | join(','))" >> $GITHUB_OUTPUT
 
   apply:
     needs: [read-config]
