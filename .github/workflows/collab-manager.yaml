@@ -1,4 +1,4 @@
-name: Manager Collaborators
+name: Manager contributors
 
 on:
   workflow_dispatch
@@ -7,33 +7,30 @@ jobs:
   read-config:
     runs-on: ubuntu-latest
     outputs:
-      collaborators: ${{ steps.create-matrix.outputs.collaborators }}
+      repos: ${{ steps.read_config.outputs.repos }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Read Collaborators Configuration File
+      - name: Read contributors Configuration File
         id: read_config
-        uses: nichmor/minimal-read-yaml@v0.0.2
-        with:
-          config: ${{ github.workspace }}/.github/collaborators.yaml
-      - name: Create Matrix
-        id: create-matrix
         run: |
-          echo "collaborators=${{ steps.read_config.outputs['collaborators'] }}"
+          python3 -m pip install pyyaml
+          echo "repos=$(python3 ../scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)" >> $GITHUB_OUTPUT
 
-#   apply:
-#     needs: [read-config]
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         collabs: ${{ needs.read-config.outputs.collaborators }}
-#     steps:
-#       - name: Print collab info
-#         run: |
-#           echo ${{ matrix.collabs }}
-#          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
-#          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.collaborators.repository), ',') }}"
+
+  apply:
+    needs: [read-config]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ${{ needs.read-config.outputs.repos }}
+    steps:
+      - name: Print collab info
+        run: |
+          echo ${{ matrix.repo }}
+          python3 -m pip install pyyaml
+          echo "$(python3 ../scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})"
 
     #   - name: Run Manager Collaborators Action
     #     id: manager-collaborators-action

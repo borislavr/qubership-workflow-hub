@@ -1,4 +1,4 @@
-collaborators:
+contributors:
   - repository: borislavr/qubership-workflow-hub
     users:
       - andyroode
@@ -11,9 +11,3 @@ collaborators:
       - KryukovaPolina
     role: push
     action: add
-
-teams:
-  integration:
-    - anduroode
-  auto_tests:
-    - KryukovaPolina
