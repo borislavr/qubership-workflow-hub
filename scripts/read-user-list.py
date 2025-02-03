@@ -24,6 +24,9 @@ def get_repo_users(user_map,repo_name):
     # print("Repo users: " + repo_users.rstrip(","))
     return repo_users.rstrip(',')
 
+def convert_to_array(string):
+    return f'["{string.replace(", ", "\",\"")}"]'
+
 def main():
     file_path = sys.argv[1]
     user_map = read_yaml_file(file_path)
@@ -32,7 +35,7 @@ def main():
         print(get_repos(user_map))
     elif switch == "users":
         if len(sys.argv) > 2:
-            print(get_repo_users(user_map,sys.argv[3]))
+            print(convert_to_array(get_repo_users(user_map,sys.argv[3])))
 
 if __name__ == "__main__":
    main()
