@@ -15,8 +15,7 @@ jobs:
       - name: Read contributors Configuration File
         id: read_config
         run: |
-          python3 -m pip install pyyaml
-          echo "repos=$(python3 ../scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)" >> $GITHUB_OUTPUT
+          echo "repos=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)" >> $GITHUB_OUTPUT
 
 
   apply:
@@ -30,7 +29,7 @@ jobs:
         run: |
           echo ${{ matrix.repo }}
           python3 -m pip install pyyaml
-          echo "$(python3 ../scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})"
+          echo "$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})"
 
     #   - name: Run Manager Collaborators Action
     #     id: manager-collaborators-action
