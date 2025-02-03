@@ -15,7 +15,8 @@ jobs:
       - name: Read contributors Configuration File
         id: read_config
         run: |
-          repos=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)
+          # repos=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml repos)
+          repos='borislavr/qubership-workflow-hub,borislavr/KubeMarine'
           echo "repos=${repos}" >> $GITHUB_OUTPUT
 
 
