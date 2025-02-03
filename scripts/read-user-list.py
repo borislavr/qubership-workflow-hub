@@ -13,7 +13,7 @@ def get_repos(user_map):
         # print(collab)
         repos.append(collab['repository'])
     # print("Repos: " + repos.rstrip(","))
-    return repos
+    return repos.join(",")
 
 def get_repo_users(user_map,repo_name):
     repo_users = ""
