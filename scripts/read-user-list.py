@@ -7,7 +7,7 @@ def read_yaml_file(file_path):
     return data
 
 def get_repos(user_map):
-    repos = ""
+    repos = []
     print(user_map)
     for collab in user_map['contributors']:
         # print(collab)
