@@ -29,16 +29,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Print collab info
+        id: print-collab-info
         run: |
           echo ${{ matrix.repo }}
-          echo "$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})"
+          echo "users=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})" >> $GITHUB_OUTPUT
 
-    #   - name: Run Manager Collaborators Action
-    #     id: manager-collaborators-action
-    #     uses: gateixeira/manage-collaborators-action@v1.0.1
-    #     with:
-    #       token: ${{ secrets.REPO_ACCESS_TOKEN }}
-    #       repositories: owner/repo1,owner/repo2
-    #       users: user1,user2
-    #       role: push
-    #       action: add
+      - name: Run Manager Collaborators Action
+        id: manager-collaborators-action
+        uses: gateixeira/manage-collaborators-action@v1.0.1
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repositories: ${{ matrix.repo}}
+          users: ${{ steps.print-collab-info.outputs.users }}
+          role: push
+          action: add
