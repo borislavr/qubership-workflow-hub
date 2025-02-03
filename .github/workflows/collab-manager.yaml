@@ -18,7 +18,10 @@ jobs:
 
       - name: Print collab info
         run: |
-          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
+          for i in ${{ steps.read-collaborators-configuration.outputs.collaborators }}; do
+            echo ${i}
+          done
+#          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
 #          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.collaborators.repository), ',') }}"
 
     #   - name: Run Manager Collaborators Action
