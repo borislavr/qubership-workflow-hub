@@ -20,8 +20,8 @@ jobs:
       - name: Create Matrix
         id: create-matrix
         run: |
-          echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')"
-          echo "collaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')" >> $GITHUB_OUTPUT
+          echo "collaborators=$(echo ${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')"
+          echo "collaborators=$(echo ${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys[]')" >> $GITHUB_OUTPUT
 
   apply:
     needs: [read-config]
