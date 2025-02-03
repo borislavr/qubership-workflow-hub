@@ -4,8 +4,10 @@ on:
   workflow_dispatch
 
 jobs:
-  manager-collaborators:
+  read-config:
     runs-on: ubuntu-latest
+    outputs:
+      collaborators: ${{ steps.create-matrix.outputs }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -15,12 +17,20 @@ jobs:
         uses: nichmor/minimal-read-yaml@v0.0.2
         with:
           config: ${{ github.workspace }}/.github/collaborators.yaml
+      - name: Create Matrix
+        id: create-matrix
+        run: echo "ollaborators=${{ steps.read-collaborators-configuration.outputs['collaborators'] }} | jq -r 'keys['repository']' | join(','))" >> $GITHUB_OUTPUT
 
+  apply:
+    needs: [read-config]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        collabs: ${{ needs.read-config.outputs.collaborators }}
+    steps:
       - name: Print collab info
         run: |
-          for i in ${{ steps.read-collaborators-configuration.outputs }}; do
-            echo ${i}
-          done
+          echo ${{ matrix.collabs }}
 #          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
 #          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.collaborators.repository), ',') }}"
 
