@@ -1,0 +1,33 @@
+name: Manager Collaborators
+
+on:
+  workflow_dispatch
+
+jobs:
+  manager-collaborators:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Read Collaborators Configuration File
+        id: read-collaborators-configuration
+        uses: pietrobolcato/action-read-yaml@1.0.0
+        with:
+          config: ${{ github.workspace }}/.github/collaborators.yaml
+          key-path-pattern: collaborators
+
+      - name: Print collab info
+        run: |
+          echo "${{ steps.read-collaborators-configuration.outputs.collaborators }}"
+          echo "${{ join(fromJson(steps.read-collaborators-configuration.outputs.repository), ',') }}"
+
+    #   - name: Run Manager Collaborators Action
+    #     id: manager-collaborators-action
+    #     uses: gateixeira/manage-collaborators-action@v1.0.1
+    #     with:
+    #       token: ${{ secrets.REPO_ACCESS_TOKEN }}
+    #       repositories: owner/repo1,owner/repo2
+    #       users: user1,user2
+    #       role: push
+    #       action: add

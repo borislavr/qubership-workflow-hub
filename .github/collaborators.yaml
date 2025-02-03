@@ -1,0 +1,19 @@
+collaborators:
+  - repository: borislavr/qubership-workflow-hub
+    users:
+      - andyroode
+      - KryukovaPolina
+    role: push
+    action: add
+  - repository: borislavr/KubeMarine
+    users:
+      - andyroode
+      - KryukovaPolina
+    role: push
+    action: add
+
+teams:
+  integration:
+    - anduroode
+  auto_tests:
+    - KryukovaPolina
