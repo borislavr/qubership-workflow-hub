@@ -33,7 +33,10 @@ jobs:
         run: |
           echo ${{ matrix.repo }}
           echo "users=$(python3 ${{ github.workspace }}/scripts/read-user-list.py ${{ github.workspace }}/.github/contributors.yaml users ${{ matrix.repo }})" >> $GITHUB_OUTPUT
-
+      - name: Print config
+        run: |
+          echo "Repo: ${{ matrix.repo }}"
+          echo "Users: ${{ steps.print-collab-info.outputs.users }}"
       - name: Run Manager Collaborators Action
         id: manager-collaborators-action
         uses: gateixeira/manage-collaborators-action@v1.0.1
