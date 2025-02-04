@@ -25,8 +25,9 @@ jobs:
       - name: Show repo list
         run: |
           echo "Repos raw: ${{ needs.read-config.outputs.repos }}"
-          # echo "Repos fromJson: ${{ fromJson(needs.read-config.outputs.repos) }}"
-          # echo "Repos from/toJson: ${{ fromJson(toJson(needs.read-config.outputs.repos)) }}"
+
+# echo "Repos fromJson: ${{ fromJson(needs.read-config.outputs.repos) }}"
+# echo "Repos from/toJson: ${{ fromJson(toJson(needs.read-config.outputs.repos)) }}"
 
 
   apply:
