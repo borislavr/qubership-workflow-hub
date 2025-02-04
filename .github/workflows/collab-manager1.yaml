@@ -18,6 +18,17 @@ jobs:
           echo "${{ github.repository_owner }}'s Repositories: ${repos}"
         env:
           GH_TOKEN: ${{ github.token }}
+  show-info:
+    needs: [read-config]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show repo list
+        run: |
+          echo "Repos raw: ${{ needs.read-config.outputs.repos }}"
+          echo "Repos fromJson: ${{ fromJson(needs.read-config.outputs.repos) }}"
+          echo "Repos from/toJson: ${{ fromJson(toJson(needs.read-config.outputs.repos)) }}"
+
+
   apply:
     needs: [read-config]
     runs-on: ubuntu-latest
