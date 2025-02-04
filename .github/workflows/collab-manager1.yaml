@@ -62,6 +62,7 @@ jobs:
           print(repo_users)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
             print(f'{var_name}={repo_users}', file=fh)
+        shell: python
       - name: Print config
         run: |
           echo "Repo: ${{ matrix.repo }}"
