@@ -29,11 +29,6 @@ jobs:
       - name: Show repo list
         run: |
           echo "Repos raw: ${{ needs.read-config.outputs.repos }}"
-
-# echo "Repos fromJson: ${{ fromJson(needs.read-config.outputs.repos) }}"
-# echo "Repos from/toJson: ${{ fromJson(toJson(needs.read-config.outputs.repos)) }}"
-
-
   apply:
     needs: [read-config]
     continue-on-error: true
@@ -57,23 +52,26 @@ jobs:
             echo "Configuration file .github/contributors1.yaml does not exist in repository ${{ matrix.repo }}" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-      - name: Print collab info
-        id: print-collab-info
+      - name: Get collab users
+        id: get_collab_users
         run: |
-          sudo apt-get update
-          sudo apt-get install -y yq
-          echo "repo_users=$(yq '.contributors|join(",")' ${{ github.workspace }}/.github/contributors1.yaml)" >> $GITHUB_OUTPUT
-          cat ${{ github.workspace }}/.github/contributors1.yaml >> $GITHUB_STEP_SUMMARY
+          import yaml
+          import os
+          var_name='repo_users'
+          repo_users=",".join(yaml.safe_load(open('${{ github.workspace }}/.github/contributors1.yaml'))['contributors'])
+          print(repo_users)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            print(f'{var_name}={repo_users}', file=fh)
       - name: Print config
         run: |
           echo "Repo: ${{ matrix.repo }}"
-          echo "Users: ${{ steps.print-collab-info.outputs.users }}"
+          echo "Users: ${{ steps.get_collab_users.outputs.users }}"
       # - name: Run Manager Collaborators Action
       #   id: manager-collaborators-action
       #   uses: gateixeira/manage-collaborators-action@v1.0.1
       #   with:
       #     token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       #     repositories: ${{ matrix.repo}}
-      #     users: ${{ steps.print-collab-info.outputs.users }}
+      #     users: ${{ steps.get_collab_users.outputs.users }}
       #     role: push
       #     action: add
