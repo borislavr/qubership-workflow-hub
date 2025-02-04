@@ -21,8 +21,7 @@ jobs:
       - name: Show repo list
         run: |
           echo "Repos raw: ${{ steps.get_repo_list.outputs.repos }}"
-          echo "Repos fromJson: ${{ fromJson(steps.get_repo_list.outputs.repos) }}"
-          echo "Repos from/toJson: ${{ fromJson(toJson(steps.get_repo_list.outputs.repos)) }}"
+
   show-info:
     needs: [read-config]
     runs-on: ubuntu-latest
