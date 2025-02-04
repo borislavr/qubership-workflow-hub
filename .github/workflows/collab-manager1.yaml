@@ -67,12 +67,12 @@ jobs:
         run: |
           echo "Repo: ${{ matrix.repo }}"
           echo "Users: ${{ steps.get_collab_users.outputs.repo_users }}"
-      # - name: Run Manager Collaborators Action
-      #   id: manager-collaborators-action
-      #   uses: gateixeira/manage-collaborators-action@v1.0.1
-      #   with:
-      #     token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      #     repositories: ${{ matrix.repo}}
-      #     users: ${{ steps.get_collab_users.outputs.repo_users }}
-      #     role: push
-      #     action: add
+      - name: Run Manager Collaborators Action
+        id: manager-collaborators-action
+        uses: gateixeira/manage-collaborators-action@v1.0.1
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repositories: ${{ matrix.repo}}
+          users: ${{ steps.get_collab_users.outputs.repo_users }}
+          role: push
+          action: add
