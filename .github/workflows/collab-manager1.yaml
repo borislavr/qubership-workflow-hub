@@ -11,8 +11,10 @@ jobs:
     steps:
       - name: Get repo list
         run: |
-          echo "repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')" >> GITHUB_OUTPUT
-          echo "repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')"
+          repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')
+          echo "repos=${repos}" >> GITHUB_OUTPUT
+          echo "repos=${repos}" >> $GITHUB_STEP_SUMMARY
+          echo "repos=${repos}"
         env:
           GH_TOKEN: ${{ github.token }}
   apply:
