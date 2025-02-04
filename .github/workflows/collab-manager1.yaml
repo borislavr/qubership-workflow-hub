@@ -59,9 +59,10 @@ jobs:
       - name: Print collab info
         id: print-collab-info
         run: |
-          sudo apt install -y yq
+          sudo apt-get update
+          sudo apt-get install -y yq
           echo "repo_users=$(yq '.contributors|join(",")' ${{ github.workspace }}/.github/contributors1.yaml)" >> $GITHUB_OUTPUT
-          echo "cat ${{ github.workspace }}/.github/contributors1.yaml" >> $GITHUB_STEP_SUMMARY
+          cat ${{ github.workspace }}/.github/contributors1.yaml >> $GITHUB_STEP_SUMMARY
       - name: Print config
         run: |
           echo "Repo: ${{ matrix.repo }}"
