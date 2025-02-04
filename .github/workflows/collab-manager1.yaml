@@ -36,6 +36,7 @@ jobs:
 
   apply:
     needs: [read-config]
+    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       matrix:
