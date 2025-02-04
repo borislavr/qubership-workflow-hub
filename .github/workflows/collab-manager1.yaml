@@ -1,0 +1,56 @@
+name: Add contributors
+
+on:
+  workflow_dispatch
+
+jobs:
+  read-config:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.read_config.outputs.repos }}
+    steps:
+      - name: Get repo list
+        run: |
+          echo "repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')" >> GITHUB_OUTPUT
+          echo "repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')"
+
+  apply:
+    needs: [read-config]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ${{ fromJson(needs.read-config.outputs.repos) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          repository: Netcracker/${{ matrix.repo }}
+
+      - name: Check configuration file existence
+        run: |
+          echo "Repository: ${{ matrix.repo }}" >> $GITHUB_STEP_SUMMARY
+          if [ -f ${{ github.workspace }}/.github/contributors1.yaml ]; then
+            echo "Configuration file .github/contributors1.yaml exists"
+          else
+            echo "Configuration file .github/contributors1.yaml does not exist"
+            echo "Configuration file .github/contributors1.yaml does not exist in repository ${{ matrix.repo }}" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+      - name: Print collab info
+        id: print-collab-info
+        run: |
+          echo "repo_users=$(yq '.contributors|join(",")' ${{ github.workspace }}/.github/contributors1.yaml)" >> $GITHUB_OUTPUT
+          echo "cat ${{ github.workspace }}/.github/contributors1.yaml" >> $GITHUB_STEP_SUMMARY
+      - name: Print config
+        run: |
+          echo "Repo: ${{ matrix.repo }}"
+          echo "Users: ${{ steps.print-collab-info.outputs.users }}"
+      # - name: Run Manager Collaborators Action
+      #   id: manager-collaborators-action
+      #   uses: gateixeira/manage-collaborators-action@v1.0.1
+      #   with:
+      #     token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      #     repositories: ${{ matrix.repo}}
+      #     users: ${{ steps.print-collab-info.outputs.users }}
+      #     role: push
+      #     action: add
