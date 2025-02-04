@@ -7,9 +7,10 @@ jobs:
   read-config:
     runs-on: ubuntu-latest
     outputs:
-      repos: ${{ steps.read_config.outputs.repos }}
+      repos: ${{ steps.get-repo-list.outputs.repos }}
     steps:
       - name: Get repo list
+        id: get-repo-list
         run: |
           repos=$(gh repo list ${{ github.repository_owner }} -L 200 --json url --jq '.[].url' --jq 'map(.url)| [.[] | sub("https://github.com/";"")]')
           echo "repos=${repos}" >> GITHUB_OUTPUT
