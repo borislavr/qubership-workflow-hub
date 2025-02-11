@@ -2,8 +2,9 @@ name: Conventional Commits
 
 on:
   pull_request:
-    branches: [ main ]
 
+permissions:
+  pull-requests: read
 jobs:
   build:
     name: Conventional Commits
