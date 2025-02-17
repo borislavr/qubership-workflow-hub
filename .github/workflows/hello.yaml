@@ -1,5 +1,12 @@
 name: Say Goodby
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   hello_world_job:
@@ -15,3 +22,5 @@ jobs:
         shell: bash
         env:
           RANDOM_NUMBER: ${{ steps.foo.outputs.random-number }}
+      - run: echo ${{ github.event.inputs.dry-run && 'Dry Run' || 'Not Dry Run' }}
+
