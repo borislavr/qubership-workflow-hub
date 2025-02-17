@@ -6,7 +6,7 @@ Detailed description of existing workflows can be found here [Index of Workflow 
 
 Below is the short description of how to implement common workflows in any Netcracker repository. All necessery secrets and variables for common workflows are already present on organization level, no additional settings or configurations are required.
 
-**The organization level secrets and vars used in actions**
+## The organization level secrets and vars used in actions
 
 | Name                          | Purpose                                                                              |
 |-------------------------------|--------------------------------------------------------------------------------------|
