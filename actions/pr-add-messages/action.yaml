@@ -1,0 +1,70 @@
+---
+name: "Add commit messages to PR's description"
+description: "Collects all commit messages in PR and adds them at the end of PR's description."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Get commit messages and update PR description
+      shell: python
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        import os
+        import requests
+        import re
+
+        # GitHub API URL
+        repo = os.getenv('GITHUB_REPOSITORY')
+        pr_number = os.getenv('GITHUB_REF').split('/')[-2]
+        api_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+
+        # Get PR details
+        headers = {
+            "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        pr_response = requests.get(api_url, headers=headers)
+        pr_data = pr_response.json()
+        pr_body = pr_data['body']
+
+        # Get commits in the PR
+        commits_url = pr_data['commits_url']
+        commits_response = requests.get(commits_url, headers=headers)
+        commits_data = commits_response.json()
+
+        # Collect messages from all commits
+        messages = []
+        for commit in commits_data:
+            messages.append(f"[{commit['author']['login']}]({commit['html_url']}) {commit['commit']['message']}")
+
+        # Update PR description with messages
+        if messages:
+            messages_body = "\n### Commit messages:\n" + "\n".join(messages) + "\n"
+            new_description = re.sub('<!-- start messages -->.*?<!-- end messages -->', messages_body, pr_body, flags=re.DOTALL)
+            # if it is the first time body update
+            if new_description == pr_body:
+                new_description = pr_body + "\n<!-- start messages -->\n### Commit messages:\n" + "\n".join(messages) + "\n<!-- end messages -->"
+
+            update_pr_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+            update_data = {
+                "body": new_description
+            }
+            update_response = requests.patch(update_pr_url, json=update_data, headers=headers)
+            print("PR description updated with commit messages.")
+        else:
+            print("No commit messages found.")
