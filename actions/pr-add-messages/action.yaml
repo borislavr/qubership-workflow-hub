@@ -41,6 +41,8 @@ runs:
         pr_response = requests.get(api_url, headers=headers)
         pr_data = pr_response.json()
         pr_body = pr_data['body']
+        if pr_body is None:
+            pr_body = ""
 
         # Get commits in the PR
         commits_url = pr_data['commits_url']

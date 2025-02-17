@@ -4,7 +4,7 @@ name: "Add commit messages to PR body"
 
 on:
     pull_request:
-        types: [opened, synchronize]
+        types: [opened, synchronize, edited]
 
 permissions:
     pull-requests: write
