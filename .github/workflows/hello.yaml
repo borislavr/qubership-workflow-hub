@@ -13,5 +13,5 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to say hello
     steps:
-      - run: echo ${{ github.event.inputs.dry-run && 'Dry Run' || 'Not Dry Run' }}
+      - run: echo ${{ (github.event.inputs.dry-run && 'Dry Run') || 'Not Dry Run' }}
 
