@@ -18,14 +18,16 @@ on:
         required: false
         type: string
         default: './.github/auto-labeler-config.yaml'
-permissions:
-  contents: read
-  issues: read
-  pull-requests: write
 
 jobs:
-  assign-labels:
+  collect-labels:
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
     runs-on: ubuntu-latest
+    outputs:
+      labels-next: ${{ steps.action-assign-labels.labels-next }}
     steps:
       - uses: actions/checkout@v4
       - name: Execute assign labels
@@ -36,4 +38,22 @@ jobs:
           github-token: ${{ github.token }}
           conventional-commits: ${{ inputs.config_file }}
           maintain-labels-not-matched: true
-          apply-changes: true
+          apply-changes: false
+
+  assign-labels:
+    needs: [collect-labels]
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Assign labels"
+        run: |
+          curl --location --request POST 'https://api.github.com/repos/{repo_owner}/{repo_name}/issues/{pr_number}/labels' \
+          --header 'Accept: application/vnd.github.v3+json' \
+          --header 'Authorization: Bearer ${{ github.token }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "labels": ${{ fromJson(needs.collect-labels.outputs.labels-next) }}
+          }'
