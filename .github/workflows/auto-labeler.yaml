@@ -20,7 +20,7 @@ on:
         default: './.github/auto-labeler-config.yaml'
 permissions:
   contents: read
-  issues: reat
+  issues: read
   pull-requests: write
 
 jobs:
