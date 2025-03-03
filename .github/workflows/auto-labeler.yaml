@@ -1,0 +1,39 @@
+---
+#
+# on:
+#     pull_request:
+#       branches: [main]
+#       types:
+#         [opened, reopened]
+#
+
+name: Automatic PR Labeler
+on:
+  workflow_call:
+    inputs:
+      pull_request_number:
+        required: true
+        type: number
+      config_file:
+        required: false
+        type: string
+        default: './.github/auto-labeler-config.yaml'
+permissions:
+  contents: read
+  issues: reat
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute assign labels
+        id: action-assign-labels
+        uses: mauroalderete/action-assign-labels@v1
+        with:
+          pull-request-number: ${{ inputs.pull_request_number }}
+          github-token: ${{ github.token }}
+          conventional-commits: ${{ inputs.config_file }}
+          maintain-labels-not-matched: true
+          apply-changes: true
