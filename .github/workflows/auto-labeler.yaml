@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Execute assign labels
         id: action-assign-labels
-        uses: mauroalderete/action-assign-labels@v1
+        uses: mauroalderete/action-assign-labels@v1.5.1
         with:
           pull-request-number: ${{ inputs.pull_request_number }}
           github-token: ${{ github.token }}
