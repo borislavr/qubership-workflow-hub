@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: "Assign labels"
         run: |
-          echo "${{ fromJson(needs.collect-labels.outputs.labels-next) }}"
+          echo "${{ needs.collect-labels.outputs.labels-next }}"
 #        run: |
 #          curl --location --request POST 'https://api.github.com/repos/{repo_owner}/{repo_name}/issues/{pr_number}/labels' \
 #          --header 'Accept: application/vnd.github.v3+json' \
