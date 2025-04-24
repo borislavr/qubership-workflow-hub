@@ -31,7 +31,7 @@ jobs:
           cd ./.github/workflows
           # shellcheck disable=2038
           find . -type f -name '*.yaml' -or -name '*.yml' | \
-          xargs sed -i 's|uses: ${{ github.repository }}/\(.*\)@.*|uses: ${{ github.repository }}/\1@v${{ github.ref_name }}|gi'
+          xargs sed -i 's|uses: ${{ github.repository }}/\(.*\)@.*|uses: ${{ github.repository }}/\1@${{ github.ref_name }}|gi'
       - name: Commit and push changes
         run: |
           git config --global user.name "${{ github.actor }}"
