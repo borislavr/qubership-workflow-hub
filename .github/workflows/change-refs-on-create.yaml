@@ -2,8 +2,6 @@ name: Switch internal references to current branch
 run-name: Switch internal refs to ${{ github.ref_name }}
 on:
   push:
-    branches:
-      - '**'
     branches-ignore:
       - 'main'
 
