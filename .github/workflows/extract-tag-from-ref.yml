@@ -40,3 +40,14 @@ jobs:
                 .addRaw('Tag does not exist')
                 .write();
             }
+  tag-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check tag existence
+        id: check_tag
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@main
+        with:
+          tag-name: ${{ github.event.inputs.tag }}
+          ref: ${{ github.ref }}
+          check-tag: true
+          create-tag: false
