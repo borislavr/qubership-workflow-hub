@@ -28,17 +28,15 @@ jobs:
             core.setOutput('exists', exists);
 
             if (exists) {
-              await github.rest.actions.createWorkflowRunSummary({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: context.runId,
-                text: `The tag "${tag}" exists.`
-              });
+              await core.summary
+                .addHeading('Tag Check Result')
+                .addCodeBlock(`✅ The tag "${tag}" exists.`, "js")
+                .addText('Tag exists')
+                .write();
             } else {
-              await github.rest.actions.createWorkflowRunSummary({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: context.runId,
-                text: `The tag "${tag}" does not exist.`
-              });
+              await core.summary
+                .addHeading('Tag Check Result')
+                .addCodeBlock(`❌ The tag "${tag}" does not exist.`, "js")
+                .addText('Tag does not exist')
+                .write();
             }
