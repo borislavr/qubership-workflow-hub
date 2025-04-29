@@ -1,26 +1,44 @@
-name: Extract tag
+---
+
+name: Check tag existence
 
 on:
-  workflow_call:
-    outputs:
+  workflow_dispatch:
+    inputs:
       tag:
-        value: ${{ jobs.tag.outputs.tag }}
+        description: 'Tag to check'
+        required: true
+        default: 'v1.0.0'
 
 jobs:
   tag:
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.set_tag.outputs.tag }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Check if tag exists
+        id: check_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tag = '${{ github.event.inputs.tag }}';
+            const { data: tags } = await github.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const exists = tags.some(t => t.name === tag);
+            core.setOutput('exists', exists);
 
-      - name: Debug GITHUB_REF
-        run: echo "GITHUB_REF = $GITHUB_REF"
-
-      - name: Set tag variable
-        id: set_tag
-        run: |
-          TAG=$(echo "${GITHUB_REF}" | sed -e 's|refs/tags/||' -e 's|refs/heads/||')
-          if [ -z "$TAG" ]; then TAG="main"; fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+            if (exists) {
+              await github.rest.actions.createWorkflowRunSummary({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                text: `The tag "${tag}" exists.`
+              });
+            } else {
+              await github.rest.actions.createWorkflowRunSummary({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                text: `The tag "${tag}" does not exist.`
+              });
+            }
