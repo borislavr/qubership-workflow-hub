@@ -31,12 +31,12 @@ jobs:
               await core.summary
                 .addHeading('Tag Check Result')
                 .addCodeBlock(`✅ The tag "${tag}" exists.`, "js")
-                .addText('Tag exists')
+                .addRaw('Tag exists')
                 .write();
             } else {
               await core.summary
                 .addHeading('Tag Check Result')
                 .addCodeBlock(`❌ The tag "${tag}" does not exist.`, "js")
-                .addText('Tag does not exist')
+                .addRaw('Tag does not exist')
                 .write();
             }
