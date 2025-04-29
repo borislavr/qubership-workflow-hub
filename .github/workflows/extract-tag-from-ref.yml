@@ -45,9 +45,9 @@ jobs:
     steps:
       - name: "Summary"
         run: |
-          echo "Event: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "Actor: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "Inputs: ${{ toJson(github.event.inputs) }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Inputs**: ${{ toJson(github.event.inputs) }}" >> $GITHUB_STEP_SUMMARY
       - name: Check tag existence
         id: check_tag
         uses: netcracker/qubership-workflow-hub/actions/tag-action@main
