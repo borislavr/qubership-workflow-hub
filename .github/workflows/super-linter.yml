@@ -69,11 +69,11 @@ jobs:
           echo "Applying local linter environment:"
           grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#"
           grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#" >> $GITHUB_ENV
-        elif [ -f "/tmp/linter-config/linters/super-linter.env" ]; then
+        elif [ -f "/tmp/linters/super-linter.env" ]; then
           echo "::warning:: Local linter environment file .github/super-linter.env is not found"
           echo "Applying common linter environment:"
-          grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#"
-          grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#" >> $GITHUB_ENV
+          grep "\S" /tmp/linters/super-linter.env | grep -v "^#"
+          grep "\S" /tmp/linters/super-linter.env | grep -v "^#" >> $GITHUB_ENV
         fi
 
     - name: Lint Code Base
