@@ -118,13 +118,23 @@ jobs:
         if: ${{ inputs.only-high-critical }}
         run: |
           SARIF_FILE=grype.sarif
-          jq '.runs[].results |= map(
-          select(
-              ((.properties.severity // "" | ascii_upcase) == "HIGH")
-              or ((.properties.severity // "" | ascii_upcase) == "CRITICAL")
-              or ((.help.text // "") | test("Severity:\\s*(high|critical)"; "i"))
+          jq '. as $input
+          | .runs[].results
+          |= map(. + {
+          security_severity: (
+          $input.runs[0].tool.driver.rules[] as $rule
+          | select($rule.id == .ruleId)
+          | $rule.properties["security-severity"]
           )
-          )' "$SARIF_FILE" > "${SARIF_FILE%.sarif}.filtered.sarif"
+          }
+          )' "$SARIF_FILE"  > "${SARIF_FILE%.sarif}.sec-sev.sarif"
+
+          jq '.runs[].results |= map(
+              select(
+                (.security_severity | tonumber) >= 7
+              )
+              )' "${SARIF_FILE%.sarif}.sec-sev.sarif" > "${SARIF_FILE%.sarif}.filtered.sarif"
+
           mv "${SARIF_FILE%.sarif}.filtered.sarif" "$SARIF_FILE"
 
 #      - name: Upload Grype SARIF
