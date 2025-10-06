@@ -137,10 +137,10 @@ jobs:
 
           mv "${SARIF_FILE%.sarif}.filtered.sarif" "$SARIF_FILE"
 
-#      - name: Upload Grype SARIF
-#        uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: grype.sarif
+      - name: Upload Grype SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: grype.sarif
 
       - name: Upload all scan artifacts
         uses: actions/upload-artifact@v4
@@ -204,10 +204,10 @@ jobs:
       #     )' "$SARIF_FILE" > "${SARIF_FILE%.sarif}.filtered.sarif"
       #     mv "${SARIF_FILE%.sarif}.filtered.sarif" "$SARIF_FILE"
 
-#      - name: Upload Trivy SARIF
-#        uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: trivy.sarif
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
 
       - name: Upload all scan artifacts
         uses: actions/upload-artifact@v4
