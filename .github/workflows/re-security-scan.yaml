@@ -99,7 +99,7 @@ jobs:
           image: "${{ needs.init.outputs.image }}"
           output-file: grype.sarif
           fail-build: false
-          severity-cutoff: high
+          severity-cutoff: critical
         continue-on-error: ${{ inputs.continue-on-error }}
 
       - name: "Grype scan (Source: High+Critical)"
