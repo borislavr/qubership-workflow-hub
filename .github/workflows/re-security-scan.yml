@@ -167,11 +167,6 @@ jobs:
           ) | @csv' "${SARIF_FILE%.sarif}.ext.sarif" > "${SARIF_FILE%.sarif}.csv"
           rm "${SARIF_FILE%.sarif}.ext.sarif"
 
-      - name: Upload Grype SARIF
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: grype.sarif
-
       - name: Upload all scan artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -179,6 +174,11 @@ jobs:
           path: |
             grype.sarif
             grype.csv
+
+      - name: Upload Grype SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: grype.sarif
 
   trivy-scan:
     runs-on: ubuntu-latest
