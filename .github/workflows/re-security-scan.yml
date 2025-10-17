@@ -114,6 +114,13 @@ jobs:
           only-fixed: ${{ inputs.only-fixed }}
         continue-on-error: ${{ inputs.continue-on-error }}
 
+      - name: Upload all scan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype.sarif.original
+          path: |
+            grype.sarif
+
       - name: "Convert Grype SARIF to CSV"
         env:
           ONLY_HIGH_CRITICAL: ${{ inputs['only-high-critical'] }}
