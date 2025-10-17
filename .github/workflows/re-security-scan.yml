@@ -98,7 +98,6 @@ jobs:
           image: "${{ env.IMAGE }}"
           output-file: grype.sarif
           fail-build: false
-          severity-cutoff: critical
           only-fixed: ${{ inputs.only-fixed }}
         continue-on-error: ${{ inputs.continue-on-error }}
 
