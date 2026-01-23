@@ -115,14 +115,17 @@ jobs:
       - name: Prepare filenames
         id: prepare-outputs
         env:
-          RUNNER: "_${{ inputs.runner }}"
+          RUNNER: "${{ inputs.runner }}"
         run: |
           if [ "${TARGET}" = "docker" ]; then
             SHORT_NAME=${INCOMMING_IMAGE##*/}
 
             SAFE_NAME=${SHORT_NAME//:/_}
             SAFE_NAME=${SAFE_NAME//\//_}
-            SAFE_NAME=${SAFE_NAME//-/_}${RUNNER}
+            SAFE_NAME=${SAFE_NAME//-/_}
+            if [ "${RUNNER}" != "" ]; then
+              SAFE_NAME=${SAFE_NAME}_${RUNNER}
+            fi
 
             echo "GRYPE_FILENAME=grype-${SAFE_NAME}.sarif" >> "$GITHUB_OUTPUT"
             echo "TRIVY_FILENAME=trivy-${SAFE_NAME}.sarif" >> "$GITHUB_OUTPUT"
