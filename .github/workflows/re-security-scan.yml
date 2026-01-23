@@ -1,5 +1,4 @@
-name: On-demand Security Scan (Grype + Trivy)
-
+name: "[REUSABLE] On-demand Security Scan (Grype + Trivy)"
 on:
   workflow_call:
     inputs:
@@ -37,6 +36,16 @@ on:
         required: false
         default: true
         type: boolean
+      upload-sarif-to-security:
+        description: "Upload SARIF files to repository's Security"
+        type: boolean
+        required: false
+        default: true
+      runner:
+        description: "runs-on runner"
+        default: ubuntu-latest
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -48,17 +57,21 @@ env:
   TARGET: ${{ inputs.target }}
   TRIVY_SEVERITY: >-
     ${{ inputs['only-high-critical'] && 'HIGH,CRITICAL' || 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL' }}
-  IMAGE: >-
+  INCOMMING_IMAGE: >-
     ${{ inputs.target == 'docker' && (inputs.image != '' && inputs.image || format('ghcr.io/{0}:latest', github.repository)) || '' }}
 
 jobs:
   init:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
+    outputs:
+      GRYPE_FILENAME: ${{ steps.prepare-outputs.outputs.GRYPE_FILENAME }}
+      TRIVY_FILENAME: ${{ steps.prepare-outputs.outputs.TRIVY_FILENAME }}
+      IMAGE: ${{ steps.normalize-image.outputs.IMAGE }}
     steps:
       - name: Scan plan
         run: |
           echo "Mode: ${TARGET}"
-          echo "Image (if docker): ${IMAGE}"
+          echo "Image (if docker): ${INCOMMING_IMAGE}"
           echo "Only high+critical: ${{ inputs['only-high-critical'] }}"
           if [ "${TARGET}" = "docker" ]; then
             echo "   - Docker scan: enabled"
@@ -71,14 +84,65 @@ jobs:
             echo "   - Source scan: skipped"
           fi
 
+      - name: Normalize IMAGE to lowercase
+        if: ${{ inputs.target == 'docker' }}
+        id: normalize-image
+        run: |
+          IMAGE="$INCOMMING_IMAGE"
+          IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          echo "Normalized IMAGE: $IMAGE_LOWER"
+          echo "IMAGE=$IMAGE_LOWER" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR (for check)
+        if: ${{ inputs.target == 'docker' }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check that image exists in registry
+        if: ${{ inputs.target == 'docker' }}
+        env:
+          IMAGE: ${{ steps.normalize-image.outputs.IMAGE }}
+        run: |
+          echo "Checking image in registry: $IMAGE"
+          if ! docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+            echo "❌ Image not found in registry: $IMAGE"
+            exit 1
+          fi
+          echo "✅ Image exists in registry: $IMAGE"
+
+      - name: Prepare filenames
+        id: prepare-outputs
+        run: |
+          if [ "${TARGET}" = "docker" ]; then
+            SHORT_NAME=${INCOMMING_IMAGE##*/}
+
+            SAFE_NAME=${SHORT_NAME//:/_}
+            SAFE_NAME=${SAFE_NAME//\//_}
+            SAFE_NAME=${SAFE_NAME//-/_}
+
+            echo "GRYPE_FILENAME=grype-${SAFE_NAME}.sarif" >> "$GITHUB_OUTPUT"
+            echo "TRIVY_FILENAME=trivy-${SAFE_NAME}.sarif" >> "$GITHUB_OUTPUT"
+
+            echo "SAFE_FILE=${SAFE_NAME}"
+
+            echo "Prepared filenames for image scan: grype-${SAFE_NAME}.sarif, trivy-${SAFE_NAME}.sarif"
+          else
+            echo "GRYPE_FILENAME=grype.sarif" >> "$GITHUB_OUTPUT"
+            echo "TRIVY_FILENAME=trivy.sarif" >> "$GITHUB_OUTPUT"
+            echo "Prepared filenames for source scan: grype.sarif, trivy.sarif"
+          fi
+
   grype-scan:
     if: ${{ inputs.grype-scan }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     needs: [init]
     steps:
       - name: Login to GHCR (docker target)
         if: ${{ inputs.target == 'docker' }}
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef #v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -86,46 +150,42 @@ jobs:
 
       - name: Checkout repository (source target)
         if: ${{ inputs.target == 'source' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: "Grype scan (Docker: High+Critical)"
         if: ${{ inputs.target == 'docker' }}
         id: grype-docker
-        uses: anchore/scan-action@a5605eb0943e46279cb4fbd9d44297355d3520ab   #v7.0.2
+        uses: anchore/scan-action@62b74fb7bb810d2c45b1865f47a77655621862a5 #v7.2.3
         with:
-          image: "${{ env.IMAGE }}"
-          output-file: grype.sarif
+          image: ${{ needs.init.outputs.IMAGE }}
+          output-file: ${{ needs.init.outputs.GRYPE_FILENAME }}
           fail-build: false
-          only-fixed: ${{ inputs.only-fixed }}
           severity-cutoff: critical
+          only-fixed: ${{ inputs.only-fixed }}
+          output-format: sarif
         continue-on-error: ${{ inputs.continue-on-error }}
 
       - name: "Grype scan (Source: High+Critical)"
         if: ${{ inputs.target == 'source' }}
         id: grype-source
-        uses: anchore/scan-action@a5605eb0943e46279cb4fbd9d44297355d3520ab  #v7.0.2
+        uses: anchore/scan-action@62b74fb7bb810d2c45b1865f47a77655621862a5 #v7.2.3
         with:
           path: .
-          output-file: grype.sarif
+          output-file: ${{ needs.init.outputs.GRYPE_FILENAME }}
           fail-build: false
           severity-cutoff: critical
           only-fixed: ${{ inputs.only-fixed }}
+          output-format: sarif
         continue-on-error: ${{ inputs.continue-on-error }}
-
-      - name: Upload all scan artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: grype.sarif.original
-          path: |
-            grype.sarif
 
       - name: "Convert Grype SARIF to CSV"
         env:
           ONLY_HIGH_CRITICAL: ${{ inputs['only-high-critical'] }}
+          GRYPE_FILENAME: ${{ needs.init.outputs.GRYPE_FILENAME }}
         run: |
-          SARIF_FILE=grype.sarif
+          SARIF_FILE=$GRYPE_FILENAME
           jq '. as $input
           | .runs[].results
           |= map(. + {
@@ -172,23 +232,27 @@ jobs:
                   ] else empty end
               )
           ) | @csv' "${SARIF_FILE%.sarif}.ext.sarif" > "${SARIF_FILE%.sarif}.csv"
+          ls -la
           rm "${SARIF_FILE%.sarif}.ext.sarif"
 
-      - name: Upload all scan artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: grype.sarif
-          path: |
-            grype.sarif
-            grype.csv
-
       - name: Upload Grype SARIF
+        if: inputs.upload-sarif-to-security
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: grype.sarif
+          sarif_file: |
+            ${{ needs.init.outputs.GRYPE_FILENAME }}
+          category: ${{ needs.init.outputs.GRYPE_FILENAME }}
+
+      - name: Upload all scan artifacts
+        uses: actions/upload-artifact@v6 #330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: ${{ needs.init.outputs.GRYPE_FILENAME }}
+          path: |
+            ${{ needs.init.outputs.GRYPE_FILENAME }}
+            *.csv
 
   trivy-scan:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     if: ${{ inputs.trivy-scan }}
     needs: [init]
     steps:
@@ -202,7 +266,7 @@ jobs:
 
       - name: Checkout repository (source target)
         if: ${{ inputs.target == 'source' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -211,9 +275,9 @@ jobs:
         id: trivy-docker
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 #0.33.1
         with:
-          image-ref: "${{ env.IMAGE }}"
+          image-ref: "${{ needs.init.outputs.IMAGE }}"
           severity: ${{ env.TRIVY_SEVERITY }}
-          output: trivy.sarif
+          output: ${{ needs.init.outputs.TRIVY_FILENAME }}
           format: "sarif"
           ignore-unfixed: ${{ inputs.only-fixed }}
           limit-severities-for-sarif: true
@@ -226,15 +290,17 @@ jobs:
         with:
           scan-type: "fs"
           severity: ${{ env.TRIVY_SEVERITY }}
-          output: trivy.sarif
+          output: ${{ needs.init.outputs.TRIVY_FILENAME }}
           format: "sarif"
           ignore-unfixed: ${{ inputs.only-fixed }}
           limit-severities-for-sarif: true
         continue-on-error: ${{ inputs.continue-on-error }}
 
       - name: "Convert Trivy SARIF to CSV"
+        env:
+          TRIVY_FILENAME: ${{ needs.init.outputs.TRIVY_FILENAME }}
         run: |
-          SARIF_FILE=trivy.sarif
+          SARIF_FILE=$TRIVY_FILENAME
           jq '. as $input
           | .runs[].results
           |= map(. + { security_severity: ($input.runs[0].tool.driver.rules[] as $rule
@@ -259,17 +325,20 @@ jobs:
                   ]
               )
           ) | @csv' "${SARIF_FILE%.sarif}.ext.sarif" > "${SARIF_FILE%.sarif}.csv"
+
+          ls -la
           rm "${SARIF_FILE%.sarif}.ext.sarif"
 
-      - name: Upload all scan artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy.sarif
-          path: |
-            trivy.sarif
-            trivy.csv
-
       - name: Upload Trivy SARIF
+        if: inputs.upload-sarif-to-security
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy.sarif
+          sarif_file: ${{ needs.init.outputs.TRIVY_FILENAME }}
+
+      - name: Upload all scan artifacts
+        uses: actions/upload-artifact@v6 #330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: ${{ needs.init.outputs.TRIVY_FILENAME }}
+          path: |
+            ${{ needs.init.outputs.TRIVY_FILENAME }}
+            *.csv
