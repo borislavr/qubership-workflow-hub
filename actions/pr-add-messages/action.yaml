@@ -44,15 +44,19 @@ runs:
         if pr_body is None:
             pr_body = ""
 
-        # Get commits in the PR
-        commits_url = pr_data['commits_url']
-        commits_response = requests.get(commits_url, headers=headers)
-        commits_data = commits_response.json()
+        try:
+          # Get commits in the PR
+          commits_url = pr_data['commits_url']
+          commits_response = requests.get(commits_url, headers=headers)
+          commits_data = commits_response.json()
 
-        # Collect messages from all commits
-        messages = []
-        for commit in commits_data:
-            messages.append(f"[{commit['author']['login']}]({commit['html_url']}) {commit['commit']['message']}")
+          # Collect messages from all commits
+          messages = []
+          for commit in commits_data:
+              messages.append(f"[{commit['author']['login']}]({commit['html_url']}) {commit['commit']['message']}")
+        except Exception as e:
+          print(f"Error: {e}")
+          messages = [] # No commit messages found
 
         # Update PR description with messages
         if messages:
