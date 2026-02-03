@@ -20,7 +20,7 @@ Below is the short description of how to implement common workflows in any Netcr
 
 There are several reusable workflows which should be added into every Netcracker repository, see the description below.
 
-### CLA
+### ⚠️ CLA
 
 The action for [CLA](https://github.com/Netcracker/qubership-workflow-hub/blob/main/CLA/cla.md) "signing" for contributors.
 
