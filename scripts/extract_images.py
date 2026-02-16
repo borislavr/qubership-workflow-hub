@@ -27,6 +27,7 @@ def find_helm_charts(repo_path):
 def extract_images_from_values(values_file):
     """Extract all Docker images from values.yaml"""
     images = set()
+    print(f"  Processing {values_file}")
     
     try:
         with open(values_file, 'r') as f:
@@ -58,7 +59,10 @@ def extract_images_from_values(values_file):
         for pattern in patterns:
             matches = re.finditer(pattern, content, re.MULTILINE)
             for match in matches:
+                print(f"  processing match: {match}")
                 image = match.group()
+                print(f"  image: {image}")
+
                 images.add(image)
                 # Skip if it looks like a URL path or invalid image
                 #if '/' in image or ':' in image:
