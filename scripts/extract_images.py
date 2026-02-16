@@ -44,10 +44,14 @@ def extract_images_from_values(values_file):
         
         # Regex patterns for Docker images
         patterns = [
-            r'[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+(?::[a-zA-Z0-9\-_.]+)?',  # org/image:tag
-            r'[a-zA-Z0-9\-_.]+\.[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+(?::[a-zA-Z0-9\-_.]+)?',  # domain/org/image:tag
-            r'[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+(?::[a-zA-Z0-9\-_.]+)?',  # org/suborg/image:tag
-            r'^[a-zA-Z0-9\-_.]+(?::[a-zA-Z0-9\-_.]+)?$'  # image:tag (library images)
+            # Формат: domain.com/org/image:tag
+            r'[a-z0-9\-_.]+\.[a-z0-9\-_.]+/[a-z0-9\-_./]+:[a-z0-9\-_.]+',
+            
+            # Формат: org/image:tag или org/suborg/image:tag
+            r'[a-z0-9\-_.]+/[a-z0-9\-_./]+:[a-z0-9\-_.]+',
+            
+            # Формат: image:tag (library images)
+            r'^[a-z0-9\-_.]+:[a-z0-9\-_.]+$'
         ]
         
         # Find all potential image strings
@@ -104,7 +108,7 @@ def main():
         exit(1)
     
     # Parse repositories list
-    repositories = [repo.strip() for repo in repos_input.split('\n') if repo.strip()]
+    repositories = [repo.strip() for repo in repos_input.split(',') if repo.strip()]
     
     result = {}
     
