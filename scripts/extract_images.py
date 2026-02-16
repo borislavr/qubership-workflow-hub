@@ -57,6 +57,7 @@ def extract_images_from_values(values_file):
         
         # Find all potential image strings
         for pattern in patterns:
+            print(f"  processing pattern: {pattern}")
             matches = re.finditer(pattern, content, re.MULTILINE)
             for match in matches:
                 print(f"  processing match: {match}")
