@@ -59,14 +59,14 @@ def extract_images_from_values(values_file):
             matches = re.finditer(pattern, content, re.MULTILINE)
             for match in matches:
                 image = match.group()
-                
+                images.add(image)
                 # Skip if it looks like a URL path or invalid image
-                if '/' in image or ':' in image:
+                #if '/' in image or ':' in image:
                     # Validate it looks like an image
-                    if re.match(r'^[a-zA-Z0-9\-_.:/]+$', image):
-                        images.add(image)
-                elif ':' in image:  # Simple image:tag like "alpine:3.14"
-                    images.add(image)
+                    #if re.match(r'^[a-zA-Z0-9\-_.:/]+$', image):
+                        #images.add(image)
+                #elif ':' in image:  # Simple image:tag like "alpine:3.14"
+                    #images.add(image)
     
     except Exception as e:
         print(f"  Error processing {values_file}: {e}")
