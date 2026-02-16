@@ -35,7 +35,7 @@ jobs:
           REPOSITORIES: ${{ github.event.inputs.repositories }}
           ORGANIZATION: ${{ github.event.inputs.organization }}
         run: |
-          python extract_images.py
+          python scripts/extract_images.py
 
       - name: Upload result
         uses: actions/upload-artifact@v4
