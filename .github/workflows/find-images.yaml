@@ -1,0 +1,44 @@
+name: Extract External Images from Helm Charts
+
+on:
+  workflow_dispatch:
+    inputs:
+      repositories:
+        description: 'List of repositories (one per line)'
+        required: true
+        type: string
+      organization:
+        description: 'GitHub organization name'
+        required: true
+        default: 'your-org-name'
+        type: string
+
+jobs:
+  extract-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install PyYAML requests
+
+      - name: Extract external images
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORIES: ${{ github.event.inputs.repositories }}
+          ORGANIZATION: ${{ github.event.inputs.organization }}
+        run: |
+          python extract_images.py
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-images
+          path: external_images.yaml
