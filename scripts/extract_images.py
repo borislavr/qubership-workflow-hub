@@ -38,11 +38,13 @@ def extract_images_from_values(values_file):
             data = yaml.safe_load(content)
         except:
             # If YAML parsing fails, try regex fallback
+            print(f"  [DEBUG]: YAML parsing fails, try regex fallback")
             content = content
         else:
             # Convert parsed YAML to string for regex search
+            print(f"  [DEBUG]: Convert parsed YAML to string for regex search")
             content = yaml.dump(data)
-        
+        print(f"  [DEBUG]: CONTENT: {content}")
         # Regex patterns for Docker images
         patterns = [
             # Формат: domain.com/org/image:tag
