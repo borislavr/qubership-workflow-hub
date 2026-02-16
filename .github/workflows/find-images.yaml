@@ -4,13 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       repositories:
-        description: 'List of repositories (one per line)'
+        description: 'List of repositories'
         required: true
         type: string
+        default: 'qubership-jaeger,qubership-logging-operator,qubership-monitoring-operator'
       organization:
         description: 'GitHub organization name'
         required: true
-        default: 'your-org-name'
+        default: 'netcracker'
         type: string
 
 jobs:
