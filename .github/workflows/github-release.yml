@@ -54,13 +54,16 @@ jobs:
           echo "PATCH=$PATCH"
           case "$VERSION_TYPE" in
             "patch")
+              echo "version type hit: patch"
               let "PATCH++"
               ;;
             "minor")
+              echo "version type hit: minor"
               let "MINOR++"
               PATCH=0
               ;;
             "major")
+              echo "version type hit: major"
               let "MAJOR++"
               MINOR=0
               PATCH=0
