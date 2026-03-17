@@ -71,7 +71,7 @@ jobs:
           # Output the new version
           echo "New version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Releaase Version: $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "Release Version: $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
 
       - name: Check if tag exists
         id: check_tag
