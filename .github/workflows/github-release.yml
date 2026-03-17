@@ -60,13 +60,13 @@ jobs:
             "minor")
               echo "version type hit: minor"
               let "MINOR++"
-              PATCH=0
+              PATCH="0"
               ;;
             "major")
               echo "version type hit: major"
               let "MAJOR++"
-              MINOR=0
-              PATCH=0
+              MINOR="0"
+              PATCH="0"
               ;;
           esac
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
