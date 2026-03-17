@@ -2,79 +2,127 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        type: string
+        description: "Version type to release (patch, minor, major)"
+        type: choice
+        options:
+          - 'patch'
+          - 'minor'
+          - 'major'
         required: true
 
-name: Create GitHub release
-
+name: Create Workflow-Hub GitHub release
+run-name: "Workflow-Hub GitHub release type ${{ inputs.version }}"
 permissions:
-  contents: write
-  actions: write
+  contents: read
 
 jobs:
-
   check-tag:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.generate_version.outputs.version }}
     steps:
-      - name: Input parameters
-        run: |
-          echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
-
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
+
+      - name: Generate new version
+        id: generate_version
+        env:
+          VERSION_TYPE: ${{ inputs.version }}
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+
+          # Extract the version number from the latest tag
+          LATEST_VERSION=$(echo "$LATEST_TAG" | cut -d'v' -f2)
+
+          # Increment the version number based on the version type
+          case "$VERSION_TYPE" in
+            "patch")
+              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$NF++;print}')
+              ;;
+            "minor")
+              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$(NF-1)++;print}')
+              ;;
+            "major")
+              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$(NF-2)++;print}')
+              ;;
+          esac
+
+          # Output the new version
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Releaase Version: $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
 
       - name: Check if tag exists
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-checker@main
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@v2.1.2
         with:
-          tag: 'v${{ github.event.inputs.version }}'
+          tag-name: "v${{ steps.generate_version.outputs.version }}"
+          ref: ${{ github.ref }}
+          create-tag: false
+          check-tag: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Output result
-        run: |
-          echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
-          echo "Tag name: v${{ github.event.inputs.version }}"
-
-      - name: Fail if tag exists
-        if: steps.check_tag.outputs.exists == 'true'
-        run: |
-          echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Tag already exists: v${{ github.event.inputs.version }}"
-          exit 1
-
   release-preparation:
     needs: [check-tag]
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.check-tag.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          token: ${{ secrets.WORKFLOWS_TOKEN }}
+          persist-credentials: true
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Set up authentication
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git config --global user.name "$ACTOR"
+          git config --global user.email "$ACTOR@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/$REPOSITORY
 
       - name: Create Release Branch
         run: |
-          git checkout -b "release/v${{ inputs.version }}"
-          git push origin "release/v${{ inputs.version }}"
+          git checkout -b "release/v$VERSION"
+          git push origin "release/v$VERSION"
+
       - name: Update references
         run: |
-          find . -type f -name '*.yaml' -or -name '*.yml' -or -name '*.md' -and -not -name 'github-release.yml' | \
-          xargs sed -i 's|uses: netcracker/qubership-workflow-hub/\(.*\)@main|uses: netcracker/qubership-workflow-hub/\1@${{ inputs.version }}|gi'
+          # shellcheck disable=2038
+          find . -type f \( -name '*.yaml' -o -name '*.yml' -o -name '*.md' \) ! -name 'github-release.yml' \
+          | xargs sed -i "s|uses: netcracker/qubership-workflow-hub/\(.*\)@main|uses: netcracker/qubership-workflow-hub/\1@v${VERSION}|gi"
+
       - name: Commit and push changes
+        env:
+          ACTOR: ${{ github.actor }}
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "$ACTOR"
+          git config --global user.email "$ACTOR@users.noreply.github.com"
           git add .
           git commit -m "Update references to the new version"
-          git push origin "release/v${{ inputs.version }}"
-          git tag "v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
+          git push origin "release/v$VERSION"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
   create-github-release:
-    needs: [release-preparation]
-    uses: borislavr/qubership-workflow-hub/.github/workflows/release-drafter.yml@main
+    needs: [check-tag, release-preparation]
+    permissions:
+      contents: write
+    uses: netcracker/qubership-workflow-hub/.github/workflows/release-drafter.yml@main
     with:
-      version: ${{ inputs.version }}
+      version: ${{ needs.check-tag.outputs.version }}
       publish: false
-      branch: "release/v${{ inputs.version }}"
+      config-name: release-drafter-config.yml
+
