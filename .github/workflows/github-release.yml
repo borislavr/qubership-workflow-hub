@@ -29,27 +29,35 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Generate new version
+      - name: Get latest release via GitHub API
         id: generate_version
         env:
           VERSION_TYPE: ${{ inputs.version }}
         run: |
-          # Get the latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0)
+          RESPONSE=$(curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest)
+
+          LATEST_TAG=$(echo "$RESPONSE" | jq -r .tag_name)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
           # Extract the version number from the latest tag
           LATEST_VERSION=$(echo "$LATEST_TAG" | cut -d'v' -f2)
 
           # Increment the version number based on the version type
+          MAJOR=$(echo $LATEST_VERSION | cut -d'.' -f1)
+          MINOR=$(echo $LATEST_VERSION | cut -d'.' -f2)
+          PATCH=$(echo $LATEST_VERSION | cut -d'.' -f3)
           case "$VERSION_TYPE" in
             "patch")
-              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$NF++;print}')
+              NEW_VERSION=${MAJOR}.${MINOR}.$(let "PATCH++")
               ;;
             "minor")
-              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$(NF-1)++;print}')
+              NEW_VERSION=${MAJOR}.$(let "MINOR++").0
               ;;
             "major")
-              NEW_VERSION=$(echo "$LATEST_VERSION" | awk -F. -v OFS=. '{$(NF-2)++;print}')
+              NEW_VERSION=$(let "MAJOR++").0.0
               ;;
           esac
 
