@@ -54,22 +54,22 @@ jobs:
           echo "PATCH=$PATCH"
           case "$VERSION_TYPE" in
             "patch")
-              echo "version type hit: patch"
-              let "PATCH++"
+              ((PATCH++))
               ;;
             "minor")
-              echo "version type hit: minor"
-              let "MINOR++"
+              ((MINOR++))
               PATCH="0"
               ;;
             "major")
-              echo "version type hit: major"
-              let "MAJOR++"
+              ((MAJOR++))
               MINOR="0"
               PATCH="0"
               ;;
+            *)
+              echo "Error: unknown version increment type '$VERSION_TYPE'. Choose one of: major, minor, patch"
+              exit 1
+              ;;
           esac
-          echo "Create a new version"
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 
           # Output the new version
