@@ -50,7 +50,7 @@ jobs:
           echo "**Inputs**: ${{ toJson(github.event.inputs) }}" >> $GITHUB_STEP_SUMMARY
       - name: Check tag existence
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@main
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@v0.1.0
         with:
           tag-name: ${{ github.event.inputs.tag }}
           ref: ${{ github.ref }}
