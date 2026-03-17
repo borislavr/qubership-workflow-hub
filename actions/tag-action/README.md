@@ -73,14 +73,14 @@ jobs:
           ref: main
 
       - name: Create a New Tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@main
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@v1.0.0
         with:
           ref: main
           tag-name: v1.0.0
           create-tag: true
 
       - name: Delete an Existing Tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-action@main
+        uses: netcracker/qubership-workflow-hub/actions/tag-action@v1.0.0
         with:
           ref: main
           tag-name: v1.0.0
