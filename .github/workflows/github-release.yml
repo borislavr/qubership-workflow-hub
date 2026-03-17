@@ -43,15 +43,14 @@ jobs:
           echo "LATEST_TAG=$LATEST_TAG"
 
           # Extract the version number from the latest tag
-          LATEST_VERSION=$(echo "$LATEST_TAG" | cut -d'v' -f2)
+          LATEST_VERSION=${LATEST_TAG#v}
 
           # Increment the version number based on the version type
-          MAJOR=$(echo $LATEST_VERSION | cut -d'.' -f1)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
           echo "MAJOR=$MAJOR"
-          MINOR=$(echo $LATEST_VERSION | cut -d'.' -f2)
           echo "MINOR=$MINOR"
-          PATCH=$(echo $LATEST_VERSION | cut -d'.' -f3)
           echo "PATCH=$PATCH"
+
           case "$VERSION_TYPE" in
             "patch")
               ((PATCH++))
