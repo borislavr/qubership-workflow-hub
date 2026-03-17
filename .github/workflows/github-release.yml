@@ -34,47 +34,59 @@ jobs:
         env:
           VERSION_TYPE: ${{ inputs.version }}
         run: |
+          set -euo pipefail
+
           RESPONSE=$(curl -s \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/latest)
 
-          LATEST_TAG=$(echo "$RESPONSE" | jq -r .tag_name)
-          echo "LATEST_TAG=$LATEST_TAG"
+          LATEST_TAG=$(echo "$RESPONSE" | jq -r '.tag_name // "v0.0.0"')
+          echo "LATEST_TAG → $LATEST_TAG"
 
-          # Extract the version number from the latest tag
-          LATEST_VERSION=${LATEST_TAG#v}
+          LATEST_VERSION="${LATEST_TAG#v}"
+          echo "Clean version string → '$LATEST_VERSION'"
 
-          # Increment the version number based on the version type
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_VERSION"
-          echo "MAJOR=$MAJOR"
-          echo "MINOR=$MINOR"
-          echo "PATCH=$PATCH"
+          # Принудительно парсим как числа + дефолты
+          IFS='.' read -r raw_major raw_minor raw_patch _ <<< "${LATEST_VERSION}.0.0.0"
+
+          MAJOR=${raw_major:-0}
+          MINOR=${raw_minor:-0}
+          PATCH=${raw_patch:-0}
+
+          # Проверяем, что это действительно числа
+          [[ ! $MAJOR =~ ^[0-9]+$ ]] && { echo "Ошибка: MAJOR не число: '$MAJOR'"; exit 2; }
+          [[ ! $MINOR =~ ^[0-9]+$ ]] && { echo "Ошибка: MINOR не число: '$MINOR'"; exit 2; }
+          [[ ! $PATCH =~ ^[0-9]+$ ]] && { echo "Ошибка: PATCH не число: '$PATCH'"; exit 2; }
+
+          echo "Parsed → MAJOR=$MAJOR  MINOR=$MINOR  PATCH=$PATCH"
+
+          echo "Increment type → '$VERSION_TYPE'"
 
           case "$VERSION_TYPE" in
-            "patch")
-              ((PATCH++))
+            patch)
+              ((PATCH += 1))
               ;;
-            "minor")
-              ((MINOR++))
-              PATCH="0"
+            minor)
+              ((MINOR += 1))
+              PATCH=0
               ;;
-            "major")
-              ((MAJOR++))
-              MINOR="0"
-              PATCH="0"
+            major)
+              ((MAJOR += 1))
+              MINOR=0
+              PATCH=0
               ;;
             *)
-              echo "Error: unknown version increment type '$VERSION_TYPE'. Choose one of: major, minor, patch"
+              echo "Недопустимый тип: '$VERSION_TYPE'"
               exit 1
               ;;
           esac
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 
-          # Output the new version
-          echo "New version: $NEW_VERSION"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Release Version: $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "→ New version: $NEW_VERSION"
+
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "**New version**: $NEW_VERSION" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check if tag exists
         id: check_tag
