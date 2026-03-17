@@ -139,5 +139,4 @@ jobs:
     with:
       version: ${{ needs.check-tag.outputs.version }}
       publish: false
-      config-name: release-drafter-config.yml
-
+      config-name: release-drafter.yml
