@@ -40,15 +40,18 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases/latest)
 
           LATEST_TAG=$(echo "$RESPONSE" | jq -r .tag_name)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "LATEST_TAG=$LATEST_TAG"
 
           # Extract the version number from the latest tag
           LATEST_VERSION=$(echo "$LATEST_TAG" | cut -d'v' -f2)
 
           # Increment the version number based on the version type
           MAJOR=$(echo $LATEST_VERSION | cut -d'.' -f1)
+          echo "MAJOR=$MAJOR"
           MINOR=$(echo $LATEST_VERSION | cut -d'.' -f2)
+          echo "MINOR=$MINOR"
           PATCH=$(echo $LATEST_VERSION | cut -d'.' -f3)
+          echo "PATCH=$PATCH"
           case "$VERSION_TYPE" in
             "patch")
               NEW_VERSION=${MAJOR}.${MINOR}.$(let "PATCH++")
