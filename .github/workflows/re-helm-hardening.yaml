@@ -43,6 +43,7 @@ jobs:
 
       - name: Scan with Kubescape (NSA + MITRE + PSS)
         run: |
+          export PATH=$PATH:/home/runner/.kubescape/bin
           kubescape scan framework nsa,mitre,pod-security \
             --dir ./charts/my-chart \
             --format sarif \
