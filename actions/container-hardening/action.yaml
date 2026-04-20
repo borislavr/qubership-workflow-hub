@@ -1,0 +1,38 @@
+name: Container Hardening Validation
+description: Container Hardening Validation
+inputs:
+  manifests-path:
+    description: 'Path to Kubernetes manifests (directory or single file) to validate'
+    required: true
+    type: string
+  dockerfile-path:
+    description: 'Optional path to Dockerfile (for image USER check)'
+    required: false
+    type: string
+  config-file:
+    description: 'Path to repo-specific config (defaults to all checks enabled)'
+    required: false
+    type: string
+    default: '.github/hardening-config.yaml'
+  image-name:
+    description: 'Optional extra image reference to validate (e.g. for build steps)'
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Python dependencies
+      shell: bash
+      run: python3 -m pip install pyyaml
+
+    - name: Run hardening validation
+      shell: bash
+      env:
+        MANIFESTS_PATH: ${{ inputs.manifests-path }}
+        DOCKERFILE_PATH: ${{ inputs.dockerfile-path }}
+        CONFIG_FILE: ${{ inputs.config-file }}
+        IMAGE_NAME: ${{ inputs.image-name }}
+      run: |
+        sudo chmod +x "${GITHUB_ACTION_PATH}/container-hardening.py"
+        ${GITHUB_ACTION_PATH}/container-hardening.py

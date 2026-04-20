@@ -1,0 +1,4 @@
+# Explicit exceptions only – all other checks remain enabled (secure defaults)
+disabled-checks:
+  - readonly-fs-deployment-pattern          # e.g. legacy app that cannot use readOnly root yet
+  - no-restricted-ports                     # if your app legitimately uses a port from the hardening list
