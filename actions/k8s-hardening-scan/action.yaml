@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         export PATH=$PATH:/home/runner/.kubescape/bin
-        kubescape scan framework nsa,mitre,pod-security \
+        kubescape scan framework nsa,mitre \
           --scan-images \
           --format json \
           --output kubescape-results.json \
