@@ -14,22 +14,22 @@ runs:
         export PATH=$PATH:/home/runner/.kubescape/bin
         kubescape scan framework nsa,mitre,pod-security \
           --scan-images \
-          --format sarif \
-          --output kubescape-results.sarif \
+          --format json \
+          --output kubescape-results.json \
           --severity-threshold medium \
-          --fail-threshold 20   # (0-100)
+          --compliance-threshold 100   # (0-100)
       continue-on-error: true
 
-    - name: Upload Kubescape results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v4
-      with:
-        sarif_file: kubescape-results.sarif
-        category: kubescape
+    # - name: Upload Kubescape results to GitHub Security
+    #   uses: github/codeql-action/upload-sarif@v4
+    #   with:
+    #     sarif_file: kubescape-results.sarif
+    #     category: kubescape
 
-    - name: Upload sarif as artifact
+    - name: Upload json as artifact
       uses: actions/upload-artifact@v7.0.1
       with:
-        path: kubescape-results.sarif
+        path: kubescape-results.json
         archive: false
 
     # - name: Checkout code
