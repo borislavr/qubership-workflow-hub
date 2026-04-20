@@ -16,7 +16,7 @@ runs:
       run: |
         export PATH=$PATH:/home/runner/.kubescape/bin
         kubescape scan framework nsa,mitre,devopsbest \
-          --include-namespaces ${{ inputs.namespaces }}
+          --include-namespaces ${{ inputs.namespaces }} \
           --scan-images \
           --verbose \
           --format json \
