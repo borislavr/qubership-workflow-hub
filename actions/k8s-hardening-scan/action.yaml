@@ -14,6 +14,7 @@ runs:
         export PATH=$PATH:/home/runner/.kubescape/bin
         kubescape scan framework nsa,mitre,devopsbest \
           --scan-images \
+          --verbose \
           --format json \
           --output kubescape-results.json \
           --severity-threshold medium \
