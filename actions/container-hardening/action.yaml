@@ -36,3 +36,11 @@ runs:
       run: |
         sudo chmod +x "${GITHUB_ACTION_PATH}/container-hardening.py"
         ${GITHUB_ACTION_PATH}/container-hardening.py
+
+    - name: Upload hardening report (always)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: container-hardening-report
+        path: hardening-report.md
+        retention-days: 7

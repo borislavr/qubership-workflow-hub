@@ -282,12 +282,3 @@ with open("hardening-report.md", "w", encoding="utf-8") as f:
 
 if exit_code == 1:
     sys.exit(1)
-          '
-
-      - name: Upload hardening report (always)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: container-hardening-report
-          path: hardening-report.md
-          retention-days: 7
