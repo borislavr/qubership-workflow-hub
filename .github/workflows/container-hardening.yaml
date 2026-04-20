@@ -1,0 +1,40 @@
+name: "[REUSABLE] Container"
+on:
+  workflow_call:
+    inputs:
+      config-file:
+        type: string
+        description: "Path to configuration file"
+jobs:
+  prepare:
+    name: "Prepare Images List"
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.load.outputs.components }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - id: load
+        name: Load Components and Platforms
+        run: |
+          components=$(jq -c '.components' ${{ inputs.config-file }})
+          echo "components=${components}" >> "$GITHUB_OUTPUT"
+  check:
+    name: ${{ matrix.component.name }} Image Check
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.prepare.outputs.components) }}
+    steps:
+      - name: Hardening Check
+        uses: borislavr/qubership-workflow-hub/actions/container-hardening@main
+        with:
+          dockerfile-path: ${{ matrix.component.file }}
+          manifests-path: "./"
