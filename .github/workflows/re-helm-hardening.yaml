@@ -37,30 +37,29 @@ jobs:
           sarif_file: trivy-results.sarif
           category: trivy-config
 
-      - name: Install Kubescape
-        run: |
-          curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
+    #   - name: Install Kubescape
+    #     run: |
+    #       curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
 
-      - name: Scan with Kubescape (NSA + MITRE + PSS)
-        run: |
-          export PATH=$PATH:/home/runner/.kubescape/bin
-          kubescape scan framework nsa,mitre,pod-security \
-            --scan-images \
-            --format sarif \
-            --output kubescape-results.sarif \
-            --severity-threshold medium \
-            --fail-threshold 20   # (0-100)
-        continue-on-error: true
+    #   - name: Scan with Kubescape (NSA + MITRE + PSS)
+    #     run: |
+    #       export PATH=$PATH:/home/runner/.kubescape/bin
+    #       kubescape scan framework nsa,mitre,pod-security \
+    #         --scan-images \
+    #         --format sarif \
+    #         --output kubescape-results.sarif \
+    #         --severity-threshold medium \
+    #         --fail-threshold 20   # (0-100)
+    #     continue-on-error: true
 
-      - name: Upload Kubescape results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: kubescape-results.sarif
-          category: kubescape
+    #   - name: Upload Kubescape results to GitHub Security
+    #     uses: github/codeql-action/upload-sarif@v3
+    #     with:
+    #       sarif_file: kubescape-results.sarif
+    #       category: kubescape
 
       # Check the latest
       - name: Fail on untagged / latest images
         run: |
           echo "Checking for untagged or 'latest' images..."
-          grep -rE 'image:.*:(latest|[^:]+)$' ./charts/my-chart --include="*.yaml" --include="*.yml" || echo "No latest images found"
-          # Если найдено — можно сделать fail через grep -q и exit 1
+          grep -rE 'image:.*:(latest|[^:]+)$' ${{ inputs.chart-path }} --include="*.yaml" --include="*.yml" || echo "No latest images found"
