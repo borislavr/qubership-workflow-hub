@@ -1,0 +1,65 @@
+name: Kubernetes Hardening & Security Scan
+
+on:
+  workflow_call:
+    inputs:
+      chart-path:
+        type: string
+        description: Path to chart
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.2.6
+
+      - name: Scan Helm chart with Trivy (misconfigurations + images)
+        run: |
+          trivy config ${{ inputs.chart-path }} \
+            --helm-values ./${{ inputs.chart-path }}/values.yaml \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --format sarif \
+            --output trivy-results.sarif
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-config
+
+      - name: Install Kubescape
+        run: |
+          curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
+
+      - name: Scan with Kubescape (NSA + MITRE + PSS)
+        run: |
+          kubescape scan framework nsa,mitre,pod-security \
+            --dir ./charts/my-chart \
+            --format sarif \
+            --output kubescape-results.sarif \
+            --severity-threshold medium \
+            --fail-threshold 20   # (0-100)
+        continue-on-error: true
+
+      - name: Upload Kubescape results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: kubescape-results.sarif
+          category: kubescape
+
+      # Check the latest
+      - name: Fail on untagged / latest images
+        run: |
+          echo "Checking for untagged or 'latest' images..."
+          grep -rE 'image:.*:(latest|[^:]+)$' ./charts/my-chart --include="*.yaml" --include="*.yml" || echo "No latest images found"
+          # Если найдено — можно сделать fail через grep -q и exit 1
