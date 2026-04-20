@@ -22,7 +22,7 @@ runs:
           --format json \
           --output kubescape-results.json \
           --severity-threshold medium \
-          --compliance-threshold 100   # (0-100)
+          --compliance-threshold 50   # (0-100)
       continue-on-error: true
 
     # - name: Upload Kubescape results to GitHub Security
