@@ -66,8 +66,8 @@ def load_all_manifests(path_str: str) -> List[Dict]:
     docs = []
     files = []
     if path.is_dir():
-        files.extend(path.rglob("*.yaml"))
-        files.extend(path.rglob("*.yml"))
+        files.extend(path.glob("*.yaml"))
+        files.extend(path.glob("*.yml"))
     elif path.is_file():
         files.append(path)
     else:
