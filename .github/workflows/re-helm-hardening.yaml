@@ -45,7 +45,7 @@ jobs:
         run: |
           export PATH=$PATH:/home/runner/.kubescape/bin
           kubescape scan framework nsa,mitre,pod-security \
-            --dir ./charts/my-chart \
+            --scan-images \
             --format sarif \
             --output kubescape-results.sarif \
             --severity-threshold medium \
