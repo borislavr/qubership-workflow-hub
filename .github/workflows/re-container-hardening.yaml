@@ -5,6 +5,9 @@ on:
       config-file:
         type: string
         description: "Path to configuration file"
+      manifests-path:
+        type: string
+        description: "Path to manifest files"
 jobs:
   prepare:
     name: "Prepare Images List"
@@ -37,4 +40,4 @@ jobs:
         uses: borislavr/qubership-workflow-hub/actions/container-hardening@main
         with:
           dockerfile-path: ${{ matrix.component.file }}
-          manifests-path: "./"
+          manifests-path: ${{ inputs.manifests-path }}
