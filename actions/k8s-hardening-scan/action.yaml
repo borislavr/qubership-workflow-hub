@@ -88,5 +88,5 @@ runs:
       shell: bash
       working-directory: temp/repocode
       run: |
-        echo "Checking for untagged or 'latest' images..."
-        grep -rE 'image:.*:(latest|[^:]+)$' . --include="*.yaml" --include="*.yml" || echo "No latest images found"
+        chmod +x ${GITHUB_ACTION_PATH}/check-untagged-images.sh
+        ${GITHUB_ACTION_PATH}/check-untagged-images.sh
