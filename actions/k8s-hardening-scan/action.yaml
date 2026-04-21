@@ -14,7 +14,7 @@ inputs:
     default: true
   execute-trivy-scan:
     type: string
-    default: true
+    default: false
   # chart-path:
   #   type: string
 runs:
