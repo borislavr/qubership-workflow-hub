@@ -1,11 +1,11 @@
 name: Kubernetes Hardening & Security Scan
 
 on:
-  workflow_call:
-    inputs:
-      chart-path:
-        type: string
-        description: Path to chart
+  workflow_call: {}
+    # inputs:
+    #   chart-path:
+    #     type: string
+    #     description: Path to chart
 
 permissions:
   contents: read
@@ -17,5 +17,5 @@ jobs:
     steps:
       - name: Hardening Scan
         uses: borislavr/qubership-workflow-hub/actions/k8s-hardening-scan@main
-        with:
-          chart-path: ${{ inputs.chart-path }}
+        # with:
+        #   chart-path: ${{ inputs.chart-path }}

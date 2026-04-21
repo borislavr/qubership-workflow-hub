@@ -3,8 +3,8 @@ description: Container Hardening Validation
 inputs:
   namespaces:
     type: string
-  chart-path:
-    type: string
+  # chart-path:
+  #   type: string
 runs:
   using: "composite"
   steps:
@@ -51,7 +51,7 @@ runs:
           --exit-code 1 \
           --format json \
           --output trivy-results.json \
-          ${{ inputs.chart-path }}
+          .
       continue-on-error: true
 
     - name: Upload json as artifact
@@ -65,4 +65,4 @@ runs:
       working-directory: temp/repocode
       run: |
         echo "Checking for untagged or 'latest' images..."
-        grep -rE 'image:.*:(latest|[^:]+)$' ${{ inputs.chart-path }} --include="*.yaml" --include="*.yml" || echo "No latest images found"
+        grep -rE 'image:.*:(latest|[^:]+)$' . --include="*.yaml" --include="*.yml" || echo "No latest images found"
