@@ -5,6 +5,7 @@ inputs:
     type: string
   output-file:
     type: string
+    default: "results.json"
   install-kubescape:
     type: string
     default: true
@@ -40,6 +41,13 @@ runs:
           --compliance-threshold 50   # (0-100)
       continue-on-error: true
 
+    - name: Generate markdown report
+      if: inputs.execute-kubescape-scan == 'true'
+      shell: bash
+      run: |
+        python3 report-generator.py -i kubescape-${{ inputs.output-file }} -o kubescape-report.md
+        cat kubescape-report.md >> $GITHUB_STEP_SUMMARY
+
     - name: Upload json as artifact
       if: inputs.execute-kubescape-scan == 'true'
       uses: actions/upload-artifact@v7.0.1
@@ -48,11 +56,10 @@ runs:
         archive: false
 
     - name: Checkout code
-      if: inputs.execute-trivy-scan == 'true'
       uses: actions/checkout@v6
       with:
         path: temp/repocode
-        persist_credentials: false
+        persist-credentials: false
 
     - name: Install Trivy
       if: inputs.execute-trivy-scan == 'true'
