@@ -3,6 +3,8 @@ description: Container Hardening Validation
 inputs:
   namespaces:
     type: string
+  chart-path:
+    type: string
 runs:
   using: "composite"
   steps:
@@ -25,23 +27,42 @@ runs:
           --compliance-threshold 50   # (0-100)
       continue-on-error: true
 
-    # - name: Upload Kubescape results to GitHub Security
-    #   uses: github/codeql-action/upload-sarif@v4
-    #   with:
-    #     sarif_file: kubescape-results.sarif
-    #     category: kubescape
-
     - name: Upload json as artifact
       uses: actions/upload-artifact@v7.0.1
       with:
         path: kubescape-results.json
         archive: false
 
-    # - name: Checkout code
-    #   uses: actions/checkout@v6
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        path: temp/repocode
+        persist_credentials: false
 
-    # - name: Fail on untagged / latest images
-    #   shell: bash
-    #   run: |
-    #     echo "Checking for untagged or 'latest' images..."
-    #     grep -rE 'image:.*:(latest|[^:]+)$' ${{ inputs.chart-path }} --include="*.yaml" --include="*.yml" || echo "No latest images found"
+    - name: Install Trivy
+      uses: aquasecurity/setup-trivy@v0.2.6
+
+    - name: Scan Helm chart with Trivy (misconfigurations + images)
+      shell: bash
+      working-directory: temp/repocode
+      run: |
+        trivy config \
+          --severity HIGH,CRITICAL,MEDIUM \
+          --exit-code 1 \
+          --format json \
+          --output trivy-results.json \
+          ${{ inputs.chart-path }}
+      continue-on-error: true
+
+    - name: Upload json as artifact
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        path: temp/repocode/trivy-results.json
+        archive: false
+
+    - name: Fail on untagged / latest images
+      shell: bash
+      working-directory: temp/repocode
+      run: |
+        echo "Checking for untagged or 'latest' images..."
+        grep -rE 'image:.*:(latest|[^:]+)$' ${{ inputs.chart-path }} --include="*.yaml" --include="*.yml" || echo "No latest images found"
