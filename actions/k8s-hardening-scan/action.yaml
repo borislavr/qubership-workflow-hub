@@ -47,7 +47,6 @@ runs:
       working-directory: temp/repocode
       run: |
         trivy config \
-          --severity HIGH,CRITICAL,MEDIUM \
           --exit-code 1 \
           --format json \
           --output trivy-results.json \
