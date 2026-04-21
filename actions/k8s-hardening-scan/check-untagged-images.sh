@@ -61,7 +61,7 @@ check_yaml_file() {
     while IFS= read -r line; do
         # Extract line number and content
         local line_num=$(echo "$line" | cut -d: -f1)
-        local line_content=$(echo "$line" | cut -d: -f2- | sed 's/^[[:space:]]*image:[[:space:]]*//')
+        local line_content=$(echo "$line" | cut -d: -f2- | sed 's/^[^#]*image:[[:space:]]*//I')
 
         # Remove possible quotes
         line_content=$(echo "$line_content" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
@@ -77,7 +77,7 @@ check_yaml_file() {
             ((images_found++))
             ((total_images++))
         fi
-    done < <(grep -n "^[[:space:]]*image:" "$file")
+    done < <(grep -ni "^[^#]*image:" "$file")
 
     return $images_found
 }
