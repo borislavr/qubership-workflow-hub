@@ -3,6 +3,8 @@ description: Container Hardening Validation
 inputs:
   namespaces:
     type: string
+  output-file:
+    type: string
   # chart-path:
   #   type: string
 runs:
@@ -22,7 +24,7 @@ runs:
           --scan-images \
           --verbose \
           --format json \
-          --output kubescape-results.json \
+          --output kubescape-${{ inputs.output-file }} \
           --severity-threshold medium \
           --compliance-threshold 50   # (0-100)
       continue-on-error: true
@@ -30,7 +32,7 @@ runs:
     - name: Upload json as artifact
       uses: actions/upload-artifact@v7.0.1
       with:
-        path: kubescape-results.json
+        path: kubescape-${{ inputs.output-file }}
         archive: false
 
     - name: Checkout code
@@ -49,14 +51,14 @@ runs:
         trivy config \
           --exit-code 1 \
           --format json \
-          --output trivy-results.json \
+          --output trivy-${{ inputs.output-file }} \
           .
       continue-on-error: true
 
     - name: Upload json as artifact
       uses: actions/upload-artifact@v7.0.1
       with:
-        path: temp/repocode/trivy-results.json
+        path: temp/repocode/trivy-${{ inputs.output-file }}
         archive: false
 
     - name: Fail on untagged / latest images
