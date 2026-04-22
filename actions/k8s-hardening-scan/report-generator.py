@@ -262,8 +262,13 @@ def main():
             for resource_id, checks in failed_mandatory_checks_all.items():
                 if checks:
                     print(f"   - {resource_id}: {', '.join(checks)}")
-            with open('failed_mandatory_checks.json', 'w', encoding='utf-8') as f:
-                json.dump(failed_mandatory_checks_all, f, indent=2)
+            # Count total failed mandatory checks across all resources
+            total_failed_mandatory_checks = sum(len(v) for v in failed_mandatory_checks_all.values())
+            print(f"\nTotal failed mandatory checks: {total_failed_mandatory_checks}")
+            # If there are failed mandatory checks, save them to a JSON file for further processing in the workflow
+            if total_failed_mandatory_checks > 0:
+                with open('failed_mandatory_checks.json', 'w', encoding='utf-8') as f:
+                    json.dump(failed_mandatory_checks_all, f, indent=2)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)
