@@ -52,6 +52,21 @@ def get_resource_ports(resource):
 
     return ports
 
+def get_resource_images(resource):
+    """Extracts container images from a resource definition."""
+    images = []
+    spec = resource.get('spec', {})
+    template = spec.get('template', {})
+    spec_template = template.get('spec', {})
+    containers = spec_template.get('containers', [])
+
+    for container in containers:
+        image = container.get('image', '')
+        if image:
+            images.append(image)
+
+    return images
+
 def get_status_emoji(status):
     """Returns the emoji for a given status."""
     return '✅' if status == 'passed' else '❌'
@@ -72,6 +87,7 @@ def generate_markdown_tables(data, config):
             continue
         resource_data = next((r for r in resources if r.get('resourceID') == resource_id), {})
         resource_ports = get_resource_ports(resource_data)
+        resource_images = get_resource_images(resource_data)
         controls = resource.get('controls', [])
 
         # Resource header
@@ -102,6 +118,12 @@ def generate_markdown_tables(data, config):
                 output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(intersection)))} | ❌ |")
             else:
                 output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
+            # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
+            latest_images = [img for img in resource_images if img.endswith(':latest')]
+            if latest_images:
+                output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
+            else:
+                output_lines.append("| Latest-Tag | No images using 'latest' tag | ✅ |")
 
         # Add statistics for the resource
         total_controls = len(controls)

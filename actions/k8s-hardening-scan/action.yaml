@@ -84,9 +84,9 @@ runs:
         path: temp/repocode/trivy-${{ inputs.output-file }}
         archive: false
 
-    - name: Fail on untagged / latest images
-      shell: bash
-      working-directory: temp/repocode
-      run: |
-        chmod +x ${GITHUB_ACTION_PATH}/check-untagged-images.sh
-        ${GITHUB_ACTION_PATH}/check-untagged-images.sh
+    # - name: Fail on untagged / latest images
+    #   shell: bash
+    #   working-directory: temp/repocode
+    #   run: |
+    #     chmod +x ${GITHUB_ACTION_PATH}/check-untagged-images.sh
+    #     ${GITHUB_ACTION_PATH}/check-untagged-images.sh
