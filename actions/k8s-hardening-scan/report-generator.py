@@ -26,6 +26,11 @@ def load_yaml_config(config_path):
     default_config_path = os.getenv('GITHUB_ACTION_PATH') + '/hardening-config.yaml'
     default_config_data = {}
     config_data = {}
+    # Try to load user config file
+    # user config structure:
+    # ignored_checks:
+    #   - ControlID1
+    #   - ControlID2
     if not Path(config_path).is_file():
         print(f"⚠️  Warning: Config file '{config_path}' not found. Using default config path '{default_config_path}'.")
     else:
@@ -33,10 +38,13 @@ def load_yaml_config(config_path):
             config_data = yaml.safe_load(f)
     with open(default_config_path, 'r', encoding='utf-8') as f:
         default_config_data = yaml.safe_load(f)
-    # Merge default config with user config, giving precedence to user config
-    merged_config = {**default_config_data, **config_data}
-    print(f"[DEBUG]: {merged_config}")
-    return merged_config
+    # Merge default config with user config. Setting `mandatory` field to False for checks listed in `ignored_checks` in user config.
+    for check in config_data.get('ignored_checks', []):
+        if check in default_config_data.get('hardening_rules', {}):
+            default_config_data['hardening_rules'][check]['mandatory'] = False
+    # merged_config = {**default_config_data, **config_data}
+    print(f"[DEBUG]: {default_config_data}")
+    return default_config_data
 
 def get_resource_ports(resource):
     """Extracts ports from a resource definition."""
