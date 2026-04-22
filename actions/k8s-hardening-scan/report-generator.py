@@ -79,11 +79,13 @@ def generate_markdown_tables(data, config):
     results = data.get('results', [])
     resources = data.get('resources', [])
 
+    # TODO: get mandatory checks list from config file
+    mandatory_checks = [chck for chck in config.get("hardening_rules", {}) if chck.get('mandatory', True)]
+
     if not results:
         return "No results found in the JSON data."
-
+    failed_mandatory_checks_all = {}
     output_lines = []
-
     for resource in results:
         resource_id = resource.get('resourceID', 'Unknown')
         if not '/Deployment/' in resource_id:  # Skip non-deployment resources
@@ -92,6 +94,7 @@ def generate_markdown_tables(data, config):
         resource_ports = get_resource_ports(resource_data)
         resource_images = get_resource_images(resource_data)
         controls = resource.get('controls', [])
+        failed_mandatory_checks = []
 
         # Resource header
         output_lines.append(f"\n## Resource: `{resource_id}`\n")
@@ -110,35 +113,54 @@ def generate_markdown_tables(data, config):
                     status = rule.get('status', '')
                     status_emoji = get_status_emoji(status)
                     output_lines.append(f"| {control_id} | {control_name} ({rule.get('name', '')}) | {status_emoji} |")
+                    if control_id in mandatory_checks and status != 'passed' and control_id not in failed_mandatory_checks:
+                        failed_mandatory_checks.append(control_id)
             else:
                 # Normal case - single rule
                 status = rules[0].get('status', '') if rules else control.get('status', {}).get('status', '')
                 status_emoji = get_status_emoji(status)
                 output_lines.append(f"| {control_id} | {control_name} | {status_emoji} |")
+                if control_id in mandatory_checks and status != 'passed':
+                    failed_mandatory_checks.append(control_id)
 
         # TODO: here need to compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
-        intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
-        if intersection:
-            output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(intersection)))} | ❌ |")
+        ports_check_failure = 0
+        ports_check_success = 0
+        ports_intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
+        if ports_intersection:
+            output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(ports_intersection)))} | ❌ |")
+            ports_check_failure += 1
+            if 'Critical-Ports' in mandatory_checks:
+                failed_mandatory_checks.append('Critical-Ports')
         else:
             output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
+            ports_check_success += 1
         # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
+        latest_images_check_failure = 0
+        latest_images_check_success = 0
         latest_images = [img for img in resource_images if img.endswith(':latest')]
         if latest_images:
             output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
+            latest_images_check_failure += 1
+            if 'No-Latest-Tag' in mandatory_checks:
+                failed_mandatory_checks.append('No-Latest-Tag')
         else:
             output_lines.append("| Latest-Tag | No images using 'latest' tag | ✅ |")
+            latest_images_check_success += 1
 
         # Add statistics for the resource
-        total_controls = len(controls)
+        total_controls = len(controls) + 2  # +2 for Critical-Ports and Latest-Tag checks
         passed = sum(1 for c in controls
-                    if c.get('rules', [{}])[0].get('status', '') == 'passed')
-        failed = total_controls - passed
+                    if c.get('rules', [{}])[0].get('status', '') == 'passed') + ports_check_success + latest_images_check_success
+        failed = total_controls - passed + ports_check_failure + latest_images_check_failure
 
         output_lines.append(f"\n**Total:** ✅ passed: {passed}, ❌ failed: {failed}\n")
+        output_lines.append(f"**Failed mandatory checks:** {', '.join(failed_mandatory_checks) if failed_mandatory_checks else 'None'}\n")
         output_lines.append("---")
 
-    return '\n'.join(output_lines)
+        failed_mandatory_checks_all[resource_id] = failed_mandatory_checks
+
+    return '\n'.join(output_lines), failed_mandatory_checks_all
 
 def generate_full_report(data, config, title="Kubescape Hardening Scan Report"):
     """Generates a full markdown report."""
@@ -165,9 +187,10 @@ def generate_full_report(data, config, title="Kubescape Hardening Scan Report"):
         report += f"- `{resource_id}`: ✅ {passed} / ❌ {failed}\n"
 
     report += "\n---\n"
-    report += generate_markdown_tables(data, config)
+    report_tables, failed_mandatory_checks_all = generate_markdown_tables(data, config)
+    report += report_tables
 
-    return report
+    return report, failed_mandatory_checks_all
 
 def main():
     parser = argparse.ArgumentParser(
@@ -201,7 +224,7 @@ def main():
         data = load_json_data(args.input)
 
         print("Generating markdown report...")
-        report = generate_full_report(data, config, args.title)
+        report, failed_mandatory_checks_all = generate_full_report(data, config, args.title)
 
         with open(args.output, 'w', encoding='utf-8') as f:
             f.write(report)
@@ -218,7 +241,13 @@ def main():
             passed = sum(1 for c in controls
                         if c.get('rules', [{}])[0].get('status', '') == 'passed')
             print(f"   - {resource_id}: {passed}/{len(controls)} passed")
-
+        if failed_mandatory_checks_all:
+            print("\n⚠️  Failed mandatory checks:")
+            for resource_id, checks in failed_mandatory_checks_all.items():
+                if checks:
+                    print(f"   - {resource_id}: {', '.join(checks)}")
+            with open('failed_mandatory_checks.json', 'w', encoding='utf-8') as f:
+                json.dump(failed_mandatory_checks_all, f, indent=2)
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         sys.exit(1)

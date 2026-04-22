@@ -15,8 +15,9 @@ inputs:
   execute-trivy-scan:
     type: string
     default: false
-  # chart-path:
-  #   type: string
+  fail-on-mandatory-checks:
+    type: string
+    default: false
 runs:
   using: "composite"
   steps:
@@ -84,9 +85,14 @@ runs:
         path: temp/repocode/trivy-${{ inputs.output-file }}
         archive: false
 
-    # - name: Fail on untagged / latest images
-    #   shell: bash
-    #   working-directory: temp/repocode
-    #   run: |
-    #     chmod +x ${GITHUB_ACTION_PATH}/check-untagged-images.sh
-    #     ${GITHUB_ACTION_PATH}/check-untagged-images.sh
+    - name: Fail on mandatory checks failure
+      if: inputs.fail-on-mandatory-checks == 'true'
+      shell: bash
+      run: |
+        if [ -f failed_mandatory_checks.json ]; then
+          echo "Mandatory checks failed. Failing the workflow."
+          cat failed_mandatory_checks.json
+          exit 1
+        else
+          echo "All mandatory checks passed."
+        fi
