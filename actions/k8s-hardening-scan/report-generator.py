@@ -76,6 +76,7 @@ def get_status_emoji(status):
 
 def generate_markdown_tables(data, config):
     """Generates markdown tables for each resourceID."""
+    print(f"[DEBUG] Generating markdown tables with config: {config}")
     results = data.get('results', [])
     resources = data.get('resources', [])
 
@@ -164,6 +165,7 @@ def generate_markdown_tables(data, config):
 
 def generate_full_report(data, config, title="Kubescape Hardening Scan Report"):
     """Generates a full markdown report."""
+    print(f"[DEBUG] Generating full report with title: {title}")
     timestamp = __import__('datetime').datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     report = f"""# {title}
