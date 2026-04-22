@@ -131,24 +131,24 @@ def generate_markdown_tables(data, config):
                     failed_mandatory_checks.append(control_id)
 
         # TODO: here need to compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
-        ports_check_failure = 0
+        # ports_check_failure = 0
         ports_check_success = 0
         ports_intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
         if ports_intersection:
             output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(ports_intersection)))} | ❌ |")
-            ports_check_failure += 1
+            # ports_check_failure += 1
             if 'Critical-Ports' in mandatory_checks:
                 failed_mandatory_checks.append('Critical-Ports')
         else:
             output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
             ports_check_success += 1
         # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
-        latest_images_check_failure = 0
+        # latest_images_check_failure = 0
         latest_images_check_success = 0
         latest_images = [img for img in resource_images if img.endswith(':latest')]
         if latest_images:
             output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
-            latest_images_check_failure += 1
+            # latest_images_check_failure += 1
             if 'No-Latest-Tag' in mandatory_checks:
                 failed_mandatory_checks.append('No-Latest-Tag')
         else:
@@ -159,7 +159,7 @@ def generate_markdown_tables(data, config):
         total_controls = len(controls) + 2  # +2 for Critical-Ports and Latest-Tag checks
         passed = sum(1 for c in controls
                     if c.get('rules', [{}])[0].get('status', '') == 'passed') + ports_check_success + latest_images_check_success
-        failed = total_controls - passed + ports_check_failure + latest_images_check_failure
+        failed = total_controls - passed
 
         output_lines.append(f"\n**Total:** ✅ passed: {passed}, ❌ failed: {failed}\n")
         output_lines.append(f"**Failed mandatory checks:** {', '.join(failed_mandatory_checks) if failed_mandatory_checks else 'None'}\n")
