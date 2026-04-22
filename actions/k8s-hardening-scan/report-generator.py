@@ -41,7 +41,8 @@ def load_yaml_config(config_path):
 def get_resource_ports(resource):
     """Extracts ports from a resource definition."""
     ports = []
-    spec = resource.get('spec', {})
+    object = resource.get('object', {})
+    spec = object.get('spec', {})
     template = spec.get('template', {})
     spec_template = template.get('spec', {})
     containers = spec_template.get('containers', [])
@@ -56,7 +57,8 @@ def get_resource_ports(resource):
 def get_resource_images(resource):
     """Extracts container images from a resource definition."""
     images = []
-    spec = resource.get('spec', {})
+    object = resource.get('object', {})
+    spec = object.get('spec', {})
     template = spec.get('template', {})
     spec_template = template.get('spec', {})
     containers = spec_template.get('containers', [])
