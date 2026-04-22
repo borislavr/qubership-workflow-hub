@@ -78,7 +78,9 @@ def generate_markdown_tables(data, config):
     """Generates markdown tables for each resourceID."""
     print(f"[DEBUG] Generating markdown tables with config: {config}")
     results = data.get('results', [])
+    print(f"[DEBUG] Total results found: {len(results)}")
     resources = data.get('resources', [])
+    print(f"[DEBUG] Total resources found: {len(resources)}")
 
     # TODO: get mandatory checks list from config file
     mandatory_checks = [chck for chck in config.get("hardening_rules", {}) if chck.get('mandatory', True)]
