@@ -50,7 +50,7 @@ def get_resource_ports(resource):
         container_ports = container.get('ports', [])
         for port in container_ports:
             ports.append(port.get('containerPort'))
-
+    print(f"[DEBUG] Resource: {resource.get('resourceID', 'Unknown')}, Ports: {ports}")
     return ports
 
 def get_resource_images(resource):
@@ -65,7 +65,7 @@ def get_resource_images(resource):
         image = container.get('image', '')
         if image:
             images.append(image)
-
+    print(f"[DEBUG] Resource: {resource.get('resourceID', 'Unknown')}, Images: {images}")
     return images
 
 def get_status_emoji(status):
