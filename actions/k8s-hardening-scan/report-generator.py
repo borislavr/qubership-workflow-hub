@@ -35,6 +35,7 @@ def load_yaml_config(config_path):
         default_config_data = yaml.safe_load(f)
     # Merge default config with user config, giving precedence to user config
     merged_config = {**default_config_data, **config_data}
+    print(f"[DEBUG]: {merged_config}")
     return merged_config
 
 def get_resource_ports(resource):
@@ -112,18 +113,19 @@ def generate_markdown_tables(data, config):
                 status = rules[0].get('status', '') if rules else control.get('status', {}).get('status', '')
                 status_emoji = get_status_emoji(status)
                 output_lines.append(f"| {control_id} | {control_name} | {status_emoji} |")
-            # TODO: here need to compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
-            intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
-            if intersection:
-                output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(intersection)))} | ❌ |")
-            else:
-                output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
-            # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
-            latest_images = [img for img in resource_images if img.endswith(':latest')]
-            if latest_images:
-                output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
-            else:
-                output_lines.append("| Latest-Tag | No images using 'latest' tag | ✅ |")
+
+        # TODO: here need to compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
+        intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
+        if intersection:
+            output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(intersection)))} | ❌ |")
+        else:
+            output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
+        # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
+        latest_images = [img for img in resource_images if img.endswith(':latest')]
+        if latest_images:
+            output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
+        else:
+            output_lines.append("| Latest-Tag | No images using 'latest' tag | ✅ |")
 
         # Add statistics for the resource
         total_controls = len(controls)
