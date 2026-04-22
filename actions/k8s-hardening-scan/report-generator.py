@@ -42,7 +42,6 @@ def load_yaml_config(config_path):
     for check in config_data.get('ignored_checks', []):
         if check in default_config_data.get('hardening_rules', {}):
             default_config_data['hardening_rules'][check]['mandatory'] = False
-    # merged_config = {**default_config_data, **config_data}
     print(f"[DEBUG]: {default_config_data}")
     return default_config_data
 
@@ -90,7 +89,7 @@ def generate_markdown_tables(data, config):
     resources = data.get('resources', [])
     print(f"[DEBUG] Total resources found: {len(resources)}")
 
-    # TODO: get mandatory checks list from config file
+    # get mandatory checks list from config file
     mandatory_checks = [
         rule_id
         for rule_id, rule_data in config.get('hardening_rules', {}).items()
@@ -138,25 +137,21 @@ def generate_markdown_tables(data, config):
                 if control_id in mandatory_checks and status != 'passed':
                     failed_mandatory_checks.append(control_id)
 
-        # TODO: here need to compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
-        # ports_check_failure = 0
+        # compare resource ports with prohibited ports list from config file and add a line to the table if there is a match.
         ports_check_success = 0
         ports_intersection = list(set(config.get('hardening_rules', {}).get('Critical-Ports', {}).get('critical_ports', [])) & set(resource_ports))
         if ports_intersection:
             output_lines.append(f"| Critical-Ports | Critical Ports: {', '.join(map(str, sorted(ports_intersection)))} | ❌ |")
-            # ports_check_failure += 1
             if 'Critical-Ports' in mandatory_checks:
                 failed_mandatory_checks.append('Critical-Ports')
         else:
             output_lines.append("| Critical-Ports | Critical Ports | ✅ |")
             ports_check_success += 1
-        # TODO: here need to check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
-        # latest_images_check_failure = 0
+        # check if any of the container images used in the resource are using the 'latest' tag and add a line to the table if there is a match.
         latest_images_check_success = 0
         latest_images = [img for img in resource_images if img.endswith(':latest')]
         if latest_images:
             output_lines.append(f"| Latest-Tag | Images using 'latest' tag: {', '.join(latest_images)} | ❌ |")
-            # latest_images_check_failure += 1
             if 'No-Latest-Tag' in mandatory_checks:
                 failed_mandatory_checks.append('No-Latest-Tag')
         else:
