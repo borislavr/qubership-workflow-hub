@@ -47,8 +47,6 @@ hardening_rules:
       - 636
       - 993
       - 995
-      - 8080
-      - 9094
   No-Latest-Tag:
     name: "No 'latest' tag"
     description: "Ensure that no containers are using the 'latest' image tag."
