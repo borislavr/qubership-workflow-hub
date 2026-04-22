@@ -83,8 +83,12 @@ def generate_markdown_tables(data, config):
     print(f"[DEBUG] Total resources found: {len(resources)}")
 
     # TODO: get mandatory checks list from config file
-    mandatory_checks = [chck for chck in config.get("hardening_rules", {}) if chck.get('mandatory', True)]
-
+    mandatory_checks = [
+        rule_id
+        for rule_id, rule_data in config.get('hardening_rules', {}).items()
+        if rule_data.get('mandatory') is True
+    ]
+    print(f"[DEBUG] Mandatory checks from config: {mandatory_checks}")
     if not results:
         return "No results found in the JSON data."
     failed_mandatory_checks_all = {}
