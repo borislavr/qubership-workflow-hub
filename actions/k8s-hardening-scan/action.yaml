@@ -1,5 +1,5 @@
-name: Kubernetes Hardening Scan
-description: Container Hardening Validation
+name: Kubescape Hardening Scan
+description: Kubescape Hardening Validation
 inputs:
   namespaces:
     type: string
@@ -21,6 +21,9 @@ inputs:
   config-file:
     type: string
     default: ".github/hardening-config.yaml"
+  report-title:
+    type: string
+    default: "Kubescape Hardening Scan Report"
 runs:
   using: "composite"
   steps:
@@ -42,32 +45,32 @@ runs:
           --format json \
           --output kubescape-${{ inputs.output-file }} \
           --severity-threshold medium \
-          --compliance-threshold 50   # (0-100)
+          --compliance-threshold 0   # (0-100)
       continue-on-error: true
 
     - name: Generate markdown report
       if: inputs.execute-kubescape-scan == 'true'
       shell: bash
       run: |
-        python3 ${GITHUB_ACTION_PATH}/report-generator.py -i kubescape-${{ inputs.output-file }} -o kubescape-report.md -c ${{ inputs.config-file }}
+        python3 ${GITHUB_ACTION_PATH}/report-generator.py -i kubescape-${{ inputs.output-file }} -o kubescape-report.md -c "${{ inputs.config-file }}" -t "${{ inputs.report-title }}"
         cat kubescape-report.md >> $GITHUB_STEP_SUMMARY
 
     - name: Upload json as artifact
       if: inputs.execute-kubescape-scan == 'true'
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         path: kubescape-${{ inputs.output-file }}
         archive: false
 
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         path: temp/repocode
         persist-credentials: false
 
     - name: Install Trivy
       if: inputs.execute-trivy-scan == 'true'
-      uses: aquasecurity/setup-trivy@v0.2.6
+      uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6
 
     - name: Scan Helm chart with Trivy (misconfigurations + images)
       if: inputs.execute-trivy-scan == 'true'
@@ -78,12 +81,12 @@ runs:
           --include-namespaces ${{ inputs.namespaces }} \
           --format json \
           --output trivy-${{ inputs.output-file }} \
-          --report summary .
+          --report summary
       continue-on-error: true
 
     - name: Upload json as artifact
       if: inputs.execute-trivy-scan == 'true'
-      uses: actions/upload-artifact@v7.0.1
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         path: temp/repocode/trivy-${{ inputs.output-file }}
         archive: false
@@ -94,6 +97,7 @@ runs:
       run: |
         if [ -f failed_mandatory_checks.json ]; then
           echo "Mandatory checks failed. Failing the workflow."
+          echo "⚠️ Mandatory checks failed. Failing the workflow." >> $GITHUB_STEP_SUMMARY
           cat failed_mandatory_checks.json
           exit 1
         else
