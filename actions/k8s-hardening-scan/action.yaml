@@ -77,11 +77,16 @@ runs:
       shell: bash
       working-directory: temp/repocode
       run: |
+        echo "[DEBUG] trivy k8s --format table --include-namespaces ${{ inputs.namespaces }}"
+        trivy k8s --format table --include-namespaces ${{ inputs.namespaces }}
         trivy k8s  \
           --include-namespaces ${{ inputs.namespaces }} \
-          --format json \
+          --format table \
           --output trivy-${{ inputs.output-file }} \
           --report summary
+        echo "[DEBUG] trivy config --format table --report summary"
+        trivy config --format table --report all
+
       continue-on-error: true
 
     - name: Upload json as artifact
