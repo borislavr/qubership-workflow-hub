@@ -74,11 +74,11 @@ runs:
       shell: bash
       working-directory: temp/repocode
       run: |
-        trivy config \
-          --exit-code 1 \
+        trivy k8s  \
+          --include-namespaces ${{ inputs.namespaces }} \
           --format json \
           --output trivy-${{ inputs.output-file }} \
-          .
+          --report summary .
       continue-on-error: true
 
     - name: Upload json as artifact
