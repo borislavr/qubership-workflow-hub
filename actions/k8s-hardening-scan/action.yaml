@@ -97,9 +97,9 @@ runs:
       shell: bash
       run: |
         if [ -f failed_mandatory_checks.json ]; then
-          echo "Mandatory checks failed. Failing the workflow."
+          echo "⚠️ Mandatory checks failed. Failing the workflow. See '${{ inputs.report-title }}' in job summary for details."
           echo "⚠️ Mandatory checks failed. Failing the workflow." >> $GITHUB_STEP_SUMMARY
-          cat failed_mandatory_checks.json
+          # cat failed_mandatory_checks.json
           exit 1
         else
           echo "All mandatory checks passed."
