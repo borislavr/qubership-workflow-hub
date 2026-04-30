@@ -102,11 +102,11 @@ def generate_markdown_tables(data, config):
     output_lines = []
     for resource in results:
         resource_id = resource.get('resourceID', 'Unknown')
-        if not '/Deployment/' in resource_id:  # Skip non-deployment resources
-            continue
         resource_data = next((r for r in resources if r.get('resourceID') == resource_id), {})
         resource_ports = get_resource_ports(resource_data)
         resource_images = get_resource_images(resource_data)
+        if len(resource_images) == 0:
+            continue
         controls = resource.get('controls', [])
         failed_mandatory_checks = []
 
