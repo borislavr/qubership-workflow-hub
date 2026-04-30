@@ -82,8 +82,8 @@ runs:
         trivy k8s --format table --include-namespaces ${{ inputs.namespaces }} --report summary --output trivy-k8s-summary-report.txt
         trivy k8s --format json --include-namespaces ${{ inputs.namespaces }} --report all --output trivy-${{ inputs.output-file }}
         echo "[DEBUG] trivy config"
-        trivy config --format table --report all --output trivy-config-all-report.txt
-        trivy config --format json --report all --output trivy-config-all-report.json
+        trivy config --format table --report all --output trivy-config-all-report.txt .
+        trivy config --format json --report all --output trivy-config-all-report.json .
       continue-on-error: true
 
     - name: Upload reports as artifact
