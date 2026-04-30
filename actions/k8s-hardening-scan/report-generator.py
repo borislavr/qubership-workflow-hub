@@ -190,6 +190,7 @@ def generate_full_report(data, config, title="Kubescape Hardening Scan Report"):
 """
 
     results = data.get('results', [])
+    resources = data.get('resources', [])
     for resource in results:
         resource_id = resource.get('resourceID', 'Unknown')
         resource_data = next((r for r in resources if r.get('resourceID') == resource_id), {})
