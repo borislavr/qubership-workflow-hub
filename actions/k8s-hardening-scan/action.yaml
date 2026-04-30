@@ -77,24 +77,21 @@ runs:
       shell: bash
       working-directory: temp/repocode
       run: |
-        echo "[DEBUG] trivy k8s --format table --include-namespaces ${{ inputs.namespaces }}"
-        trivy k8s --format table --include-namespaces ${{ inputs.namespaces }}
-        trivy k8s  \
-          --include-namespaces ${{ inputs.namespaces }} \
-          --format table \
-          --output trivy-${{ inputs.output-file }} \
-          --report summary
-        echo "[DEBUG] trivy config --format table --report summary"
-        trivy config --format table --report all
-
+        echo "[DEBUG] trivy k8s"
+        trivy k8s --format table --include-namespaces ${{ inputs.namespaces }} --report all --output trivy-k8s-all-report.txt
+        trivy k8s --format table --include-namespaces ${{ inputs.namespaces }} --report summary --output trivy-k8s-summary-report.txt
+        trivy k8s --format json --include-namespaces ${{ inputs.namespaces }} --report all --output trivy-${{ inputs.output-file }}
+        echo "[DEBUG] trivy config"
+        trivy config --format table --report all --output trivy-config-all-report.txt
+        trivy config --format json --report all --output trivy-config-all-report.json
       continue-on-error: true
 
-    - name: Upload json as artifact
+    - name: Upload reports as artifact
       if: inputs.execute-trivy-scan == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        path: temp/repocode/trivy-${{ inputs.output-file }}
-        archive: false
+        path: temp/repocode/trivy-*.*
+        archive: true
 
     - name: Fail on mandatory checks failure
       if: inputs.fail-on-mandatory-checks == 'true'
